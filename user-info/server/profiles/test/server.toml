@@ -1,0 +1,32 @@
+# dubbo server toml configure file
+
+# pprof
+Pprof_Enabled       = true
+Pprof_Port          = 10080
+
+# server
+Transport			= "http"
+Registry			= "zookeeper"
+
+# application config
+[Application_Config]
+Organization        = "zenmen.com"
+Name                = "PalmChat"
+Module              = "dubbogo user-info server"
+Version             = "0.0.1"
+Owner               = "ZX"
+
+[Registry_Config]
+   # You can indent as you please. Tabs or spaces. TOML don't care.
+    Address = ["192.168.35.3:2181"]
+    Timeout = 3
+
+[[Service_List]]
+    Protocol            = "jsonrpc"
+    Service             = "com.youni.UserProvider"
+	Retries             = 1
+
+[[Server_List]]
+    IP                  = ""
+	Port                = 10000
+	Protocol            = "jsonrpc"
