@@ -10,6 +10,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	_ "net/http/pprof"
@@ -19,8 +20,6 @@ import (
 	"sync"
 	"syscall"
 	"time"
-
-	"golang.org/x/net/context"
 )
 
 import (

@@ -11,6 +11,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	_ "net/http/pprof"
@@ -19,8 +20,6 @@ import (
 	"strconv"
 	"syscall"
 	"time"
-
-	"golang.org/x/net/context"
 )
 
 import (

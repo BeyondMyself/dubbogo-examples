@@ -12,8 +12,8 @@ package main
 
 import (
 	// "encoding/json"
+	"context"
 	"fmt"
-	"golang.org/x/net/context"
 	"time"
 )
 
