@@ -32,7 +32,7 @@ usage() {
 }
 
 start() {
-    APP_LOG_PATH=${PROJECT_HOME}"logs/"
+    APP_LOG_PATH="${PROJECT_HOME}logs/"
     mkdir -p ${APP_LOG_PATH}
     APP_BIN=${PROJECT_HOME}sbin/${APP_NAME}
     chmod u+x ${APP_BIN}
@@ -95,9 +95,9 @@ list() {
 
         if [[ ${OS_NAME} == "Linux" ]]; then
             echo "index: user, pid, start, duration"
-	else
-            echo "index: PID, WINPID, UID, STIME, COMMAND"
-	fi
+    else
+        echo "index: PID, WINPID, UID, STIME, COMMAND"
+    fi
         idx=0
         for ps in ${PID}
         do
@@ -116,7 +116,7 @@ case C"$opt" in
         stop
         ;;
     Cterm)
-	term
+        term
         ;;
     Crestart)
         term

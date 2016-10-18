@@ -47,8 +47,8 @@ type (
 		Name  string `json:"name"`
 		Age   int    `json:"age"`
 		sex   Gender
-		Sex   string `json:"sex"`
 		Birth int    `json:"time"`
+		Sex   string `json:"sex"`
 	}
 
 	UserId struct {
