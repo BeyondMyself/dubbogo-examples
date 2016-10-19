@@ -27,9 +27,9 @@
 
 	<dubbo:protocol name="jsonrpc"/>
 
-	<dubbo:registry address="zookeeper://192.168.35.3:2181"/>
+	<!-- dubbo:registry address="zookeeper://192.168.35.3:2181"/ -->
 	<!-- dubbo.registry.address from dubbo.properties -->
-	<!-- dubbo:registry address="${dubbo.registry.address}" / -->
+	<dubbo:registry address="${dubbo.registry.address}" />
 
 	<!-- 使用multicast广播注册中心暴露发现服务地址 -->
 	<!--dubbo:registry address="zookeeper://10.128.164.251:2186" /-->
