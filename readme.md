@@ -20,7 +20,7 @@ a golang micro-service framework compatible with alibaba dubbo. just using jsonr
 
 > 1 部署zookeeper服务；
 >
-> 2 请部署 https://github.com/QianmiOpen/dubbo-rpc-jsonrpc 服务端，如果你不想编译，可以使用我编译好的 dubbogo-examples/user-info/java-server/dubbo_jsonrpc_example.bz2，注意修改zk地址(conf/dubbo.properties:line6:"dubbo.registry.address")和监听端口(conf/dubbo.properties:line6:"dubbo.protocol.port", 不想修改也可以), 然后执行"bin/start.sh"启动java 服务端；
+> 2 请编译并部署dubbogo-examples/user-info/java-server，注意修改zk地址(conf/dubbo.properties:line6:"dubbo.registry.address")和监听端口(conf/dubbo.properties:line6:"dubbo.protocol.port", 不建议修改port), 然后执行"bin/start.sh"启动java服务端；
 >
 > 3 修改dubbogo-examples/user-info/client/profiles/test/client.toml:line 33，写入正确的zk地址；
 >
