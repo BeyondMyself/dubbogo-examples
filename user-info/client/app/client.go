@@ -24,6 +24,7 @@ import (
 
 import (
 	"github.com/AlexStocks/gocolor"
+	"github.com/AlexStocks/goext/time"
 	log "github.com/AlexStocks/log4go"
 )
 
@@ -36,6 +37,22 @@ import (
 	"github.com/AlexStocks/dubbogo/transport"
 )
 
+type Gender int
+
+const (
+	MAN = iota
+	WOMAN
+)
+
+var genderStrings = [...]string{
+	"MAN",
+	"WOMAN",
+}
+
+func (g Gender) String() string {
+	return genderStrings[g]
+}
+
 type (
 	User struct {
 		Id   string `json:"id"`
@@ -43,8 +60,16 @@ type (
 		Age  int64  `json:"age"`
 		Time int64  `json:"time"`
 		Sex  string `json:"sex"`
+		// Sex Gender `json:"sex"`
 	}
 )
+
+func (u User) String() string {
+	return fmt.Sprintf(
+		"User{Id:%s, Name:%s, Age:%d, Time:%s, Sex:%s}",
+		u.Id, u.Name, u.Age, gxtime.YMDPrint(int(u.Time), 0), u.Sex,
+	)
+}
 
 var (
 	connectTimeout  time.Duration = 100e6
@@ -65,7 +90,8 @@ func main() {
 	initProfiling()
 	rpcClient = initClient()
 
-	go test()
+	go test("A003")
+	go test("A000")
 
 	initSignal()
 }
@@ -227,22 +253,19 @@ func initSignal() {
 	}
 }
 
-func test() {
+func test(userKey string) {
 	var (
 		err error
 
 		service string
 		method  string
-		userKey string
 		user    *User
 		ctx     context.Context
 		req     client.Request
 	)
 
-	userKey = string("A003")
-
 	// Create request
-	service = string("com.youni.UserProvider")
+	service = string("com.ikurento.user.UserProvider")
 	method = string("GetUser")
 	req = rpcClient.NewJsonRequest(service, method, []string{userKey})
 	// 注意这里，如果userKey是一个叫做UserKey类型的对象，则最后一个参数应该是 []UserKey{userKey}
@@ -261,5 +284,5 @@ func test() {
 		return
 	}
 
-	gocolor.Info("response result:%#v", user)
+	gocolor.Info("response result:%s", user)
 }

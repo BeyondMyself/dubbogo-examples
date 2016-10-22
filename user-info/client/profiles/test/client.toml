@@ -22,8 +22,8 @@ Registry                = "zookeeper"
 
 # application config
 [Application_Config]
-Organization            = "zenmen.com"
-Name                    = "PalmChat"
+Organization            = "ikurento.com"
+Name                    = "Pusher"
 Module                  = "dubbogo user-info client"
 Version                 = "0.0.1"
 Owner                   = "ZX"
@@ -35,5 +35,4 @@ Owner                   = "ZX"
 
 [[Service_List]]
     Protocol            = "jsonrpc"
-    Service             = "com.youni.UserProvider"
-
+    Service             = "com.ikurento.user.UserProvider"

@@ -19,6 +19,7 @@ import (
 
 import (
 	"github.com/AlexStocks/gocolor"
+	"github.com/AlexStocks/goext/time"
 )
 
 import (
@@ -33,8 +34,8 @@ const (
 )
 
 var genderStrings = [...]string{
-	"man",
-	"woman",
+	"MAN",
+	"WOMAN",
 }
 
 func (g Gender) String() string {
@@ -63,7 +64,8 @@ type (
 var (
 	DefaultUser = User{
 		Id: "0", Name: "Alex Stocks", Age: 31,
-		Birth: int(time.Date(1985, time.November, 10, 23, 0, 0, 0, time.UTC).Unix()),
+		// Birth: int(time.Date(1985, time.November, 10, 23, 0, 0, 0, time.UTC).Unix()),
+		Birth: gxtime.YMD(1985, 11, 24, 15, 15, 0),
 		sex:   Gender(MAN),
 	}
 
@@ -72,6 +74,7 @@ var (
 
 func init() {
 	DefaultUser.Sex = DefaultUser.sex.String()
+	userMap.user["A000"] = DefaultUser
 	userMap.user["A001"] = User{Id: "001", Name: "ZhangSheng", Age: 18, sex: MAN}
 	userMap.user["A002"] = User{Id: "002", Name: "Lily", Age: 20, sex: WOMAN}
 	userMap.user["A003"] = User{Id: "113", Name: "Moorse", Age: 30, sex: MAN}
@@ -166,7 +169,7 @@ func (this *UserProvider) GetUser(ctx context.Context, req []string, rsp *User) 
 }
 
 func (this *UserProvider) Service() string {
-	return "com.youni.UserProvider"
+	return "com.ikurento.user.UserProvider"
 }
 
 func (this *UserProvider) Version() string {

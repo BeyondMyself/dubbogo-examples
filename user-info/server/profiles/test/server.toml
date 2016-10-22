@@ -10,8 +10,8 @@ Registry			= "zookeeper"
 
 # application config
 [Application_Config]
-Organization        = "zenmen.com"
-Name                = "PalmChat"
+Organization        = "ikurento.com"
+Name                = "Pusher"
 Module              = "dubbogo user-info server"
 Version             = "0.0.1"
 Owner               = "ZX"
@@ -23,10 +23,12 @@ Owner               = "ZX"
 
 [[Service_List]]
     Protocol            = "jsonrpc"
-    Service             = "com.youni.UserProvider"
+    # 相当于dubbo.xml中的interface
+    Service             = "com.ikurento.user.UserProvider"
 	Retries             = 1
 
 [[Server_List]]
     IP                  = ""
-	Port                = 10000
+	Port                = 20000
+    # 本server能够提供所有支持同样的Protocol的ServiceList的服务
 	Protocol            = "jsonrpc"

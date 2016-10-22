@@ -1,25 +1,19 @@
-/*
- * Copyright 1999-2011 Alibaba Group.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// *****************************************************
+// DESC    : dubbo consumer
+// AUTHOR  : writtey by 包增辉(https://github.com/baozh)
+// VERSION : 1.0
+// LICENCE : LGPL V3
+// EMAIL   : alexstocks@foxmail.com
+// MOD     : 2016-10-19 17:03
+// FILE    : Consumer.java
+// ******************************************************
+
 package com.ikurento.user;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class Consumer {
-
     //定义一个私有变量 （Spring中要求）
     private UserProvider userProvider;
 

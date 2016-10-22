@@ -25,6 +25,7 @@
 	
 	<dubbo:service interface="com.ikurento.user.UserProvider" ref="demoService"/>
     <dubbo:service interface="com.ikurento.user.UserProvider" ref="otherService" version="2.0"/>
+	<dubbo:service interface="com.ikurento.user.UserProvider" ref="otherService" group="as" version="2.0"/>
 
    <dubbo:protocol id="dubbo" name="dubbo" port="20000" />
    <dubbo:protocol id="jsonrpc" name="jsonrpc" port="10000" />
