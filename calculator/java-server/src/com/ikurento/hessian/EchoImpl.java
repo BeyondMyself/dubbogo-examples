@@ -4,7 +4,7 @@ import java.util.Date;
 
 import com.caucho.hessian.server.HessianServlet;
 
-public class ServiceImpl extends HessianServlet implements Service {
+public class EchoImpl extends HessianServlet implements Echo {
 
     public String stringEcho(String s) {
         return s;

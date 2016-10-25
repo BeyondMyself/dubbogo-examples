@@ -17,13 +17,17 @@ public class HessianServer {
 
         ServletContextHandler context = new ServletContextHandler(1);
 
-        // create servlet
-        ServletHolder servletHolder = new ServletHolder(new ServiceImpl());
-        servletHolder.setInitParameter("debug", "true");
+        // create echo servlet
+        ServletHolder echoSH = new ServletHolder(new EchoImpl());
+        echoSH.setInitParameter("debug", "true");
 
+        // create math servlet
+        ServletHolder mathSH = new ServletHolder(new MathImpl());
+        mathSH.setInitParameter("debug", "true");
 
         // add servlet
-        context.addServlet(servletHolder, "/");
+        context.addServlet(echoSH, "/echo");
+        context.addServlet(mathSH, "/math");
 
         if (debug) {
             NCSARequestLog requestLog = new NCSARequestLog();
@@ -39,7 +43,6 @@ public class HessianServer {
             requestLogHandler.setRequestLog(requestLog);
             handlers.addHandler(requestLogHandler);
         }
-
 
         // add handler
         handlers.addHandler(context);

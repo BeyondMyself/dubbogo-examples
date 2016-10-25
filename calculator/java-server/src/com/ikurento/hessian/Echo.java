@@ -3,7 +3,7 @@ package com.ikurento.hessian;
 import java.util.Date;
 import java.util.List;
 
-public interface Service {
+public interface Echo {
     public String stringEcho(String s);
     public byte[] binaryEcho(String hex);
     public boolean boolEcho(boolean b);
