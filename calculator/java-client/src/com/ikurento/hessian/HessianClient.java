@@ -1,10 +1,12 @@
+package com.ikurento.hessian;
+
 import com.caucho.hessian.client.HessianProxyFactory;
 
 
 public class HessianClient {
 
     public static void main(String[] args) {
-        String url = "http://localhost:7000/";
+        String url = "http://localhost:8000/";
         HessianProxyFactory factory = new HessianProxyFactory();
         factory.setDebug(true);
 
@@ -39,7 +41,6 @@ public class HessianClient {
             System.out.println(h.longEcho(31415926));
 
             System.out.println(h.nullEcho());
-
 
         } catch (Exception e) {
             System.out.println(e);

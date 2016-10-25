@@ -11,7 +11,7 @@ public class HessianServer {
     private static final boolean debug = false;
 
     public static void main(String[] args) throws Exception {
-        Server server = new Server(7000);
+        Server server = new Server(8000);
 
         HandlerList handlers = new HandlerList();
 
