@@ -1,3 +1,10 @@
+// *****************************************************
+// AUTHOR  : Alex Stocks
+// EMAIL   : alexstocks@foxmail.com
+// MOD     : 2016-10-26 11:16
+// FILE    : HessianServer.java
+// ******************************************************
+
 package com.ikurento.hessian;
 
 import org.eclipse.jetty.server.NCSARequestLog;
@@ -25,9 +32,14 @@ public class HessianServer {
         ServletHolder mathSH = new ServletHolder(new MathImpl());
         mathSH.setInitParameter("debug", "true");
 
+        // create datatype servlet
+        ServletHolder dtSH = new ServletHolder(new DataTypeImpl());
+        dtSH.setInitParameter("debug", "true");
+
         // add servlet
         context.addServlet(echoSH, "/echo");
         context.addServlet(mathSH, "/math");
+        context.addServlet(dtSH, "/datatype");
 
         if (debug) {
             NCSARequestLog requestLog = new NCSARequestLog();
