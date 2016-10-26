@@ -3,10 +3,10 @@ a golang micro-service framework compatible with alibaba dubbo. just using jsonr
 
 ## 说明 ##
 ---
-> dubbogo 目前版本(0.1.1)支持的codec 是jsonrpc 2.0，transport protocol是http。
-> 只要你的java程序支持jsonrpc 2.0 over http，那么dubbogo程序就能调用它。
-> dubbogo自己的server端也已经实现，即dubbogo既能调用java service也能调用dubbogo实现的service。
-> 由于dubbogo还没有上传到github，使用的时候请先下载https://github.com/AlexStocks/dubbogo，然后放在路径$/gopath}/github.com/AlexStocks/下面。
+- 1 dubbogo 目前版本(0.1.1)支持的codec 是jsonrpc 2.0，transport protocol是http。
+- 2 只要你的java程序支持jsonrpc 2.0 over http，那么dubbogo程序就能调用它。
+- 3 dubbogo自己的server端也已经实现，即dubbogo既能调用java service也能调用dubbogo实现的service。
+- 4 使用的时候请先下载https://github.com/AlexStocks/dubbogo，然后放在路径$/gopath}/github.com/AlexStocks/下面。
 
 ## dubbogo examples ##
 ---
@@ -16,7 +16,7 @@ a golang micro-service framework compatible with alibaba dubbo. just using jsonr
 
 ### dubogo example1: user-info ###
 ---
-*从这个程序可以看出dubbogo程序能够调用dubbo的服务*
+*从这个程序可以看出dubbogo程序(user-info/client & user-info/server) 如何与 java(dubbo)的程序(user-info/java-client & user-info/java-server)进行双向互调(测试的时候一定注意修改配置文件中服务端和zk的ip&port).*
 
 > 1 部署zookeeper服务；
 >
@@ -35,3 +35,11 @@ a golang micro-service framework compatible with alibaba dubbo. just using jsonr
 ---
 
 *这个程序是为了执行压力测试，整个编译部署过程可以参考user-info这个示例的相关操作步骤。*
+
+### dubbogo example3: calculator ###
+---
+*这个程序主要是为了测试github.com/AlexStocks/codec/hessian/client_test.go,之所以取名calculator是因为服务端有math 8interface,无其他意义。*
+
+测试的时候注意修改 github.com/AlexStocks/dubbogo-examples/calculator/java-server/src/com/ikurento/hessian:HessianServer.java中与url相关的设置。具体来说是，port(HessianServer.java:line 21) 和 path(HessianServer.java:line 40-42).
+
+无论是java-server还是java-client，只需执行sh build-winidows.sh(linux: sh build-linux.sh)即可。

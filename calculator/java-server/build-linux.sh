@@ -4,7 +4,7 @@
 # AUTHOR  : Alex Stocks
 # EMAIL   : alexstocks@foxmail.com
 # MOD     : 2016-10-26 20:28
-# FILE    : build-windows.sh
+# FILE    : build-linux.sh
 # ******************************************************
 
 #rm -f *.class
@@ -12,7 +12,7 @@ rm ./HessianServer.jar
 cp="./"
 for j in $(ls ../java-lib)
 do
-  cp+=";../java-lib/$j"   # windows中用分号，linux中用冒号
+  cp+=":../java-lib/$j"   # windows中用分号，linux中用冒号
 done
 
 JAVA_OPT=" -DDEBUG -server -Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.Slf4Log "
@@ -24,6 +24,6 @@ javac -classpath $cp ./src/com/ikurento/hessian/*.java -d ./ # ./src/com/ikurent
 jar cvmf ./META-INF/MANIFEST.MF HessianServer.jar ./com/ikurento/hessian/* # ../java-lib/*
 # jar -xf HessianServer.jar
 rm -rf ./com
-cp+=";./HessianServer.jar"
+cp+=":./HessianServer.jar"
 java $JAVA_OPT -classpath $cp com.ikurento.hessian.HessianServer
 rm ./HessianServer.jar
