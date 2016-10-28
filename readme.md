@@ -35,11 +35,3 @@ a golang micro-service framework compatible with alibaba dubbo. just using jsonr
 ---
 
 *这个程序是为了执行压力测试，整个编译部署过程可以参考user-info这个示例的相关操作步骤。*
-
-### dubbogo example3: calculator ###
----
-*这个程序主要是为了测试github.com/AlexStocks/codec/hessian/client_test.go,之所以取名calculator是因为服务端有math 8interface,无其他意义。*
-
-测试的时候注意修改 github.com/AlexStocks/dubbogo-examples/calculator/java-server/src/com/ikurento/hessian:HessianServer.java中与url相关的设置。具体来说是，port(HessianServer.java:line 21) 和 path(HessianServer.java:line 40-42).
-
-无论是java-server还是java-client，只需执行sh build-winidows.sh(linux: sh build-linux.sh)即可。
