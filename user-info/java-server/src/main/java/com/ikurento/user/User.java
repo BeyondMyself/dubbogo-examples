@@ -2,11 +2,12 @@ package com.ikurento.user;
 // ref: https://github.com/JoeCao/dubbo_jsonrpc_example/tree/master/dubbo_server/src/main/java/com/ofpay/demo/api
 
 import java.util.Date;
+import java.io.Serializable;
 
 /**
  * Created by wuwen on 15/4/7.
  */
-public class User {
+public class User implements Serializable  {
 
     private String id;
 
@@ -21,11 +22,18 @@ public class User {
     public User() {
     }
 
-
     public User(String id, String name, int age) {
         this.id = id;
         this.name = name;
         this.age = age;
+    }
+
+    public User(String id, String name, int age, Date time, Gender sex) {
+        this.id = id;
+        this.name = name;
+        this.age = age;
+        this.time = time;
+        this.sex = sex;
     }
 
     public String getId() {
@@ -66,5 +74,9 @@ public class User {
 
     public void setSex(Gender sex) {
         this.sex = sex;
+    }
+
+    public String toString() {
+        return "User{id:" + id + ", name:" + name + ", age:" + age + ", time:" + time + ", gender:" + sex + "}";
     }
 }

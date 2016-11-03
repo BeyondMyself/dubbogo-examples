@@ -15,18 +15,18 @@
  - limitations under the License.
 -->
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
 	http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
-	
+
 	<bean id="demoService" class="com.ikurento.user.UserProviderImpl" />
-    <bean id="otherService" class="com.ikurento.user.UserProviderAnotherImpl"/>
-	
+	<bean id="otherService" class="com.ikurento.user.UserProviderAnotherImpl"/>
+
 	<dubbo:service interface="com.ikurento.user.UserProvider" ref="demoService"/>
-    <dubbo:service interface="com.ikurento.user.UserProvider" ref="otherService" version="2.0"/>
+	<dubbo:service interface="com.ikurento.user.UserProvider" ref="otherService" version="2.0"/>
 	<dubbo:service interface="com.ikurento.user.UserProvider" ref="otherService" group="as" version="2.0"/>
 
-   <dubbo:protocol id="dubbo" name="dubbo" port="20000" />
-   <dubbo:protocol id="jsonrpc" name="jsonrpc" port="10000" />
+	<dubbo:protocol id="dubbo" name="dubbo" port="20000" />
+	<dubbo:protocol id="jsonrpc" name="jsonrpc" port="10000" />
 </beans>

@@ -3,16 +3,24 @@ package com.ikurento.user;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+// import org.apache.log4j.Logger;
+// import org.apache.log4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
-/**
- * Created by caozupeng on 15-4-10.
- */
 public class UserProviderAnotherImpl implements UserProvider {
+    // private static final Logger logger = LoggerFactory.getLogger(getClass()); // 只输出到dubbo的log(logs/server.log)
+    private static final Logger logger = LoggerFactory.getLogger("userLogger"); // 输出到user-server.log
 
-    Logger logger = LoggerFactory.getLogger(getClass());
+    private Map<String, User> userMap = new HashMap<String, User>();
+
+    public UserProviderAnotherImpl() {
+        // userMap.put("001", new User("001", "other-zhangsan", 18, new Date(1998-1900, 1, 2, 3, 4, 5), Gender.MAN));
+        userMap.put("001", new User("001", "other-zhangsan", 18, new Date(0x12345678), Gender.MAN));
+        userMap.put("002", new User("002", "other-lisi", 20, new Date(1996-1900, 1, 2, 3, 4, 5), Gender.MAN));
+        userMap.put("003", new User("003", "other-lily", 23, new Date(1993-1900, 1, 2, 3, 4, 5), Gender.WOMAN));
+        userMap.put("004", new User("004", "other-lisa", 32, new Date(1985-1900, 1, 2, 3, 4, 5), Gender.WOMAN));
+    }
 
     public boolean isLimit(Gender gender, String name) {
         logger.info(String.format("input gender=%sand name=%s", gender, name));
@@ -22,6 +30,23 @@ public class UserProviderAnotherImpl implements UserProvider {
     public User GetUser(String userId) {
         logger.info("input userId = " + userId);
         return new User(userId, "Joe", 48);
+    }
+
+    public List<User> GetUsers(List<String> userIdList) {
+        Iterator it = userIdList.iterator();
+        List<User> userList = new ArrayList<User>();
+        logger.warn("@userIdList size:" + userIdList.size());
+
+        while(it.hasNext()) {
+            String id = (String)(it.next());
+            logger.info("GetUsers(@uid:" + id + ")");
+            if (userMap.containsKey(id)) {
+                userList.add(userMap.get(id));
+                logger.info("id:" + id + ", user:" + userMap.get(id));
+            }
+        }
+
+        return userList;
     }
 
     @Override
