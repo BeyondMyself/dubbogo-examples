@@ -78,16 +78,31 @@
         </dependency>
 
     </dependencies>
+
     <repositories>
-        <repository>
-            <id>ofpay-public</id>
-            <name>intranet public groups</name>
-            <url>http://nexus.dev.ofpay.com/nexus/content/groups/public</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
+		<repository>
+		<id>repo.ibiblio.org</id>
+		<url>http://mirrors.ibiblio.org/pub/mirrors/maven2</url>
+		<releases>
+			<enabled>true</enabled>
+		</releases>
+		<snapshots>
+			<enabled>false</enabled>
+		</snapshots>
+		</repository>
     </repositories>
+    <pluginRepositories>
+		  <pluginRepository>
+			<id>plugin.ibiblio.org</id>
+			<url>http://mirrors.ibiblio.org/pub/mirrors/maven2</url>
+			<releases>
+			<enabled>true</enabled>
+			</releases>
+			<snapshots>
+			<enabled>false</enabled>
+			</snapshots>
+		  </pluginRepository>
+		</pluginRepositories>
 
     <build>
         <plugins>
