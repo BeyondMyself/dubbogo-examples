@@ -5,3 +5,4 @@
 # ******************************************************
 
 mvn clean package -Dmaven.test.skip
+# mvn -X clean compile package -DskipTests=true
