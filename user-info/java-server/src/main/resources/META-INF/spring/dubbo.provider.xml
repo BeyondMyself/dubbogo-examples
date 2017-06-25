@@ -30,5 +30,5 @@
 	<dubbo:protocol id="dubbo" name="dubbo" port="20000" />
 	<dubbo:protocol id="jsonrpc" name="jsonrpc" port="10000" />
 
-	<dubbo:registry id="ikurento" address="192.168.0.200:2181" />
+	<dubbo:registry id="ikurento" address="127.0.0.1:2181" />
 </beans>
