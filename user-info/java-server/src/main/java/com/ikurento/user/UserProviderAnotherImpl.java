@@ -49,7 +49,7 @@ public class UserProviderAnotherImpl implements UserProvider {
         return userList;
     }
 
-    @Override
+    // @Override
     public User getUser(int userCode) {
         logger.info("input userCode = " + userCode);
         return new User(String.valueOf(userCode), "userCode get", 48);

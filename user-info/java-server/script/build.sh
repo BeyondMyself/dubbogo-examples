@@ -4,5 +4,6 @@
 # FILE    : build.sh
 # ******************************************************
 
+# mvn dependency:sources
 mvn clean package -Dmaven.test.skip
 # mvn -X clean compile package -DskipTests=true
