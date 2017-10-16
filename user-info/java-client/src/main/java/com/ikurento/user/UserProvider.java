@@ -16,8 +16,10 @@
 package com.ikurento.user;
 // https://github.com/JoeCao/dubbo_jsonrpc_example/tree/master/dubbo_server/src/main/java/com/ofpay/demo/api
 
-public interface UserProvider {
+import java.util.List;
 
+public interface UserProvider {
 	User GetUser(String userId);
 
+	List<User> GetUsers(List<String> userIdList);
 }
