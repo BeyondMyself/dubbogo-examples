@@ -17,7 +17,7 @@ import (
 )
 
 import (
-	"github.com/AlexStocks/gocolor"
+	"github.com/AlexStocks/goext/log"
 	log "github.com/AlexStocks/log4go"
 	config "github.com/koding/multiconfig"
 )
@@ -98,7 +98,7 @@ func initServerConf() *ServerConfig {
 
 	conf = new(ServerConfig)
 	config.MustLoadWithPath(confFile, conf)
-	gocolor.Info("config{%#v}\n", conf)
+	gxlog.CInfo("config{%#v}\n", conf)
 
 	return conf
 }

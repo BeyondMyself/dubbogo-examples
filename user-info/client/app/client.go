@@ -23,7 +23,7 @@ import (
 )
 
 import (
-	"github.com/AlexStocks/gocolor"
+	"github.com/AlexStocks/goext/log"
 	"github.com/AlexStocks/goext/time"
 	log "github.com/AlexStocks/log4go"
 )
@@ -182,7 +182,7 @@ func initClient() client.Client {
 		return nil
 	}
 	// ttl, err = (conf.Request_Timeout)
-	gocolor.Info("consumer retries:%d", conf.Retries)
+	gxlog.CInfo("consumer retries:%d", conf.Retries)
 	clt = client.NewClient(
 		client.Retries(conf.Retries),
 		client.PoolSize(conf.Pool_Size),
@@ -280,9 +280,9 @@ func test(userKey string) {
 	user = new(User)
 	// Call service
 	if err = rpcClient.Call(ctx, req, user, client.WithDialTimeout(connectTimeout)); err != nil {
-		gocolor.Error("client.Call() return error:", err)
+		gxlog.CError("client.Call() return error:", err)
 		return
 	}
 
-	gocolor.Info("response result:%s", user)
+	gxlog.CInfo("response result:%s", user)
 }

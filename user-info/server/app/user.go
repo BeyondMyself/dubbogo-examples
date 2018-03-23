@@ -18,7 +18,7 @@ import (
 )
 
 import (
-	"github.com/AlexStocks/gocolor"
+	"github.com/AlexStocks/goext/log"
 	"github.com/AlexStocks/goext/time"
 )
 
@@ -114,7 +114,7 @@ func (this *UserProvider) GetUser(ctx context.Context, req *UserId, rsp *User) e
 	user, err = this.getUser(req.Id)
 	if err == nil {
 		*rsp = *user
-		gocolor.Info("rsp:%#v", rsp)
+		gxlog.CInfo("rsp:%#v", rsp)
 		// s, _ := json.Marshal(rsp)
 		// fmt.Println(string(s))
 
@@ -133,11 +133,11 @@ func (this *UserProvider) GetUser(ctx context.Context, req *string, rsp *User) e
 		user *User
 	)
 
-	gocolor.Info("req:%#v", *req)
+	gxlog.CInfo("req:%#v", *req)
 	user, err = this.getUser(*req)
 	if err == nil {
 		*rsp = *user
-		gocolor.Info("rsp:%#v", rsp)
+		gxlog.CInfo("rsp:%#v", rsp)
 		// s, _ := json.Marshal(rsp)
 		// fmt.Println(string(s))
 
@@ -154,11 +154,11 @@ func (this *UserProvider) GetUser(ctx context.Context, req []string, rsp *User) 
 		user *User
 	)
 
-	gocolor.Info("req:%#v", req)
+	gxlog.CInfo("req:%#v", req)
 	user, err = this.getUser(req[0])
 	if err == nil {
 		*rsp = *user
-		gocolor.Info("rsp:%#v", rsp)
+		gxlog.CInfo("rsp:%#v", rsp)
 		// s, _ := json.Marshal(rsp)
 		// fmt.Println(string(s))
 
