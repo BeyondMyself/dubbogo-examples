@@ -9,13 +9,12 @@
 # FILE    : release.sh
 # ******************************************************
 
-
 set -e
 
-export GOOS=windows
+export GOOS=darwin
 export GOARCH=amd64
 
-PROFILE=release
+PROFILE=test
 
 PROJECT_HOME=`pwd`
 
@@ -27,3 +26,4 @@ fi
 if [ -f "${PROJECT_HOME}/assembly/common/build.sh" ]; then
 . ${PROJECT_HOME}/assembly/common/build.sh
 fi
+

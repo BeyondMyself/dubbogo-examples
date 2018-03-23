@@ -23,7 +23,7 @@ import (
 )
 
 import (
-	"github.com/AlexStocks/gocolor"
+	"github.com/AlexStocks/goext/log"
 	log "github.com/AlexStocks/log4go"
 )
 
@@ -156,7 +156,7 @@ func initClient() client.Client {
 		return nil
 	}
 	// ttl, err = (conf.Request_Timeout)
-	gocolor.Info("consumer retries:%d", conf.Retries)
+	gxlog.CInfo("consumer retries:%d", conf.Retries)
 	clt = client.NewClient(
 		client.Retries(conf.Retries),
 		client.PoolSize(conf.Pool_Size),
@@ -269,31 +269,31 @@ func test() {
 			start = time.Now()
 			for index = 0; index < conf.Loop_Number; index++ {
 				if err = rpcClient.Call(ctx, req, &rsp, client.WithDialTimeout(connectTimeout)); err != nil {
-					gocolor.Error("client.Call() return error:", err)
+					gxlog.CError("client.Call() return error:%s", err)
 					fail++
 					// return
 				}
 				if rsp != key {
-					gocolor.Error("goroutine id:%d, client.Call(%s.%s{%s}) = {%s}", id, service, method, key, rsp)
+					gxlog.CError("goroutine id:%d, client.Call(%s.%s{%s}) = {%s}", id, service, method, key, rsp)
 					fail++
 					// return
 				}
-				// gocolor.Info("response result:%#v", rsp)
+				gxlog.CInfo("response result:%#v", rsp)
 			}
 			diff[id] = time.Now().Sub(start)
-			gocolor.Info("after loop %d times, groutine{%d} time costs:%v, fail times:{%d}",
+			gxlog.CInfo("after loop %d times, groutine{%d} time costs:%v, fail times:{%d}",
 				conf.Loop_Number, id, diff[id].String(), fail)
 			wg.Done()
-			gocolor.Info("goroutine{%d} exit now", id)
+			gxlog.CInfo("goroutine{%d} exit now", id)
 		}(idx)
-		gocolor.Info("loop index:%d", idx)
+		gxlog.CInfo("loop index:%d", idx)
 	}
-	gocolor.Info("test wg wait")
+	gxlog.CInfo("test wg wait")
 	wg.Wait()
-	gocolor.Info("test wg wait over")
+	gxlog.CInfo("test wg wait over")
 
 	for idx = 0; idx < conf.Loop_Number; idx++ {
 		sum += diff[idx]
 	}
-	gocolor.Info("avg time diff:%s", time.Duration(int64(sum)/int64(conf.Loop_Number*conf.Paral_Number)).String())
+	gxlog.CInfo("avg time diff:%s", time.Duration(int64(sum)/int64(conf.Loop_Number*conf.Paral_Number)).String())
 }

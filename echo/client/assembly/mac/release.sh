@@ -12,7 +12,7 @@
 
 set -e
 
-export GOOS=windows
+export GOOS=darwin
 export GOARCH=amd64
 
 PROFILE=release
