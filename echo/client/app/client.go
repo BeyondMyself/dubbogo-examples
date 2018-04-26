@@ -269,31 +269,31 @@ func test() {
 			start = time.Now()
 			for index = 0; index < conf.Loop_Number; index++ {
 				if err = rpcClient.Call(ctx, req, &rsp, client.WithDialTimeout(connectTimeout)); err != nil {
-					gxlog.CError("client.Call() return error:%s", err)
+					gocolor.Error("client.Call() return error:", err)
 					fail++
 					// return
 				}
 				if rsp != key {
-					gxlog.CError("goroutine id:%d, client.Call(%s.%s{%s}) = {%s}", id, service, method, key, rsp)
+					gocolor.Error("goroutine id:%d, client.Call(%s.%s{%s}) = {%s}", id, service, method, key, rsp)
 					fail++
 					// return
 				}
-				gxlog.CInfo("response result:%#v", rsp)
+				// gocolor.Info("response result:%#v", rsp)
 			}
 			diff[id] = time.Now().Sub(start)
-			gxlog.CInfo("after loop %d times, groutine{%d} time costs:%v, fail times:{%d}",
+			gocolor.Info("after loop %d times, groutine{%d} time costs:%v, fail times:{%d}",
 				conf.Loop_Number, id, diff[id].String(), fail)
 			wg.Done()
-			gxlog.CInfo("goroutine{%d} exit now", id)
+			gocolor.Info("goroutine{%d} exit now", id)
 		}(idx)
-		gxlog.CInfo("loop index:%d", idx)
+		gocolor.Info("loop index:%d", idx)
 	}
-	gxlog.CInfo("test wg wait")
+	gocolor.Info("test wg wait")
 	wg.Wait()
-	gxlog.CInfo("test wg wait over")
+	gocolor.Info("test wg wait over")
 
 	for idx = 0; idx < conf.Loop_Number; idx++ {
 		sum += diff[idx]
 	}
-	gxlog.CInfo("avg time diff:%s", time.Duration(int64(sum)/int64(conf.Loop_Number*conf.Paral_Number)).String())
+	gocolor.Info("avg time diff:%s", time.Duration(int64(sum)/int64(conf.Loop_Number*conf.Paral_Number)).String())
 }

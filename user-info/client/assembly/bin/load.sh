@@ -11,10 +11,11 @@
 
 APP_NAME="APPLICATION_NAME"
 APP_ARGS=""
+SLEEP_INTERVAL=5
 
 PROJECT_HOME=""
 OS_NAME=`uname`
-if [[ ${OS_NAME} == "Linux" ]]; then
+if [[ ${OS_NAME} != "Windows" ]]; then
     PROJECT_HOME=`pwd`
     PROJECT_HOME=${PROJECT_HOME}"/"
 fi
@@ -28,6 +29,8 @@ usage() {
     echo "       $0 term"
     echo "       $0 restart"
     echo "       $0 list"
+    echo "       $0 monitor"
+    echo "       $0 crontab"
     exit
 }
 
@@ -54,7 +57,7 @@ start() {
 
 stop() {
     PID=`ps aux | grep -w ${APP_NAME} | grep -v grep | awk '{print $2}'`
-    if [[ ${OS_NAME} != "Linux" ]]; then
+    if [[ ${OS_NAME} != "Linux" && ${OS_NAME} != "Darwin" ]]; then
         PID=`ps aux | grep -w ${APP_NAME} | grep -v grep | awk '{print $1}'`
     fi
     if [ "${PID}" != "" ];
@@ -70,7 +73,7 @@ stop() {
 
 term() {
     PID=`ps aux | grep -w ${APP_NAME} | grep -v grep | awk '{print $2}'`
-    if [[ ${OS_NAME} != "Linux" ]]; then
+    if [[ ${OS_NAME} != "Linux" && ${OS_NAME} != "Darwin" ]]; then
         PID=`ps aux | grep -w ${APP_NAME} | grep -v grep | awk '{print $1}'`
     fi
     if [ "${PID}" != "" ];
@@ -85,7 +88,7 @@ term() {
 
 list() {
     PID=`ps aux | grep -w ${APP_NAME} | grep -v grep | awk '{printf("%s,%s,%s,%s\n", $1, $2, $9, $10)}'`
-    if [[ ${OS_NAME} != "Linux" ]]; then
+    if [[ ${OS_NAME} != "Linux" && ${OS_NAME} != "Darwin" ]]; then
         PID=`ps aux | grep -w ${APP_NAME} | grep -v grep | awk '{printf("%s,%s,%s,%s,%s\n", $1, $4, $6, $7, $8)}'`
     fi
 
@@ -93,7 +96,7 @@ list() {
     then
         echo "list ${APP_NAME}"
 
-        if [[ ${OS_NAME} == "Linux" ]]; then
+        if [[ ${OS_NAME} == "Linux" || ${OS_NAME} == "Darwin" ]]; then
             echo "index: user, pid, start, duration"
     else
         echo "index: PID, WINPID, UID, STIME, COMMAND"
@@ -105,6 +108,47 @@ list() {
             ((idx ++))
         done
     fi
+}
+
+monitor() {
+    idx=0
+    while true; do
+        PID=`ps aux | grep -w ${APP_NAME} | grep -v grep | awk '{print $2}'`
+        if [[ ${OS_NAME} != "Linux" && ${OS_NAME} != "Darwin" ]]; then
+            PID=`ps aux | grep -w ${APP_NAME} | grep -v grep | awk '{print $1}'`
+        fi
+        if [[ "${PID}" == "" ]]; then
+            start
+            idx=0
+        fi
+
+        ((LIFE=idx*${SLEEP_INTERVAL}))
+        echo "${APP_NAME} ( pid = " ${PID} ") has been working in normal state for " $LIFE " seconds."
+        ((idx ++))
+        sleep ${SLEEP_INTERVAL}
+    done
+}
+
+crontab() {
+    idx=0
+    while true; do
+        PID=`ps aux | grep -w ${APP_NAME} | grep -v grep | awk '{print $2}'`
+        if [[ ${OS_NAME} != "Linux" && ${OS_NAME} != "Darwin" ]]; then
+            PID=`ps aux | grep -w ${APP_NAME} | grep -v grep | awk '{print $1}'`
+        fi
+        if [[ "${PID}" == "" ]]; then
+            start
+            idx=0
+        fi
+
+        ((LIFE=idx*${SLEEP_INTERVAL}))
+        echo "${APP_NAME} ( pid = " ${PID} ") has been working in normal state for " $LIFE " seconds."
+        ((idx ++))
+        sleep ${SLEEP_INTERVAL}
+        if [[ ${LIFE} -gt ${MAX_LIFETIME} ]]; then
+            kill -9 ${PID}
+        fi
+    done
 }
 
 opt=$1
@@ -124,6 +168,12 @@ case C"$opt" in
         ;;
     Clist)
         list
+        ;;
+    Cmonitor)
+        monitor
+        ;;
+    Cperiodic_restart)
+        crontab
         ;;
     C*)
         usage

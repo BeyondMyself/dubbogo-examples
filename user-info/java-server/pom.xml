@@ -11,7 +11,7 @@
 	</parent>
     <artifactId>user-info-server</artifactId>
     <packaging>jar</packaging>
-    <version>0.1.0</version>
+    <version>0.2.0</version>
     <description>The demo provider module of dubbo project</description>
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>

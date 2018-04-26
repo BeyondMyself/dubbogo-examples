@@ -2,7 +2,7 @@
 # DESC    : env var & configure
 # AUTHOR  : Alex Stocks
 # VERSION : 1.0
-# LICENCE : LGPL V3
+# LICENCE : Apache License 2.0
 # EMAIL   : alexstocks@foxmail.com
 # MOD     : 2016-07-01 15:20
 # FILE    : config.go
@@ -23,6 +23,9 @@ import (
 )
 
 import (
+	"github.com/AlexStocks/dubbogo/codec"
+	"github.com/AlexStocks/dubbogo/codec/hessian"
+	"github.com/AlexStocks/dubbogo/codec/jsonrpc"
 	"github.com/AlexStocks/dubbogo/common"
 	"github.com/AlexStocks/dubbogo/registry"
 	"github.com/AlexStocks/dubbogo/registry/zk"
@@ -55,14 +58,35 @@ var (
 
 	DefaultTransports = map[string]TransportNew{
 		"http": transport.NewHTTPTransport,
+		"tcp":  transport.NewTcpTransport,
 	}
 
 	DefaultContentTypes = map[string]string{
 		"jsonrpc": "application/json",
+		"dubbo":   "application/hessian",
+	}
+
+	DefaultDubbogoClientConfig = map[string]DubbogoClientConfig{
+		"jsonrpc": DubbogoClientConfig{
+			contentType:   "jsonrpc",
+			transportType: "http",
+			codec:         jsonrpc.NewCodec,
+		},
+		"dubbo": DubbogoClientConfig{
+			contentType:   "dubbo",
+			transportType: "tcp",
+			codec:         hessian.NewCodec,
+		},
 	}
 )
 
 type (
+	DubbogoClientConfig struct {
+		contentType   string
+		transportType string
+		codec         codec.NewCodec
+	}
+
 	// Client holds supported types by the multiconfig package
 	ClientConfig struct {
 		// pprof
@@ -73,15 +97,15 @@ type (
 		Request_Timeout string `default:"5s"` // 500ms, 1m
 		NET_IO_Timeout  string `default:"5s"` // 500ms, 1m
 		Retries         int    `default:"1"`
+		// Connection Pool
 		Pool_Size       int    `default:"128"`
 		Pool_TTL        string `default:"1m"`
 		Connect_Timeout string `default:"100ms"`
 
 		// codec & selector & transport & registry
-		Content_Type string `default:"jsonrpc"`
+		// codec & selector & transport & registry
 		Selector     string `default:"cache"`
 		Selector_TTL string `default:"10m"`
-		Transport    string `default:"http"`
 		Registry     string `default:"zookeeper"`
 		// application
 		Application_Config common.ApplicationConfig

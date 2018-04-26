@@ -14,10 +14,8 @@ Pool_Size               = 32
 Pool_TTL                = "10m"
 # connect timeout
 Connect_Timeout         = "100ms"
-Content_Type            = "jsonrpc"
 Selector                = "cache"
-Transport               = "http"
-
+Selector_TTL            = "10m"
 Registry                = "zookeeper"
 
 # application config

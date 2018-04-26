@@ -30,7 +30,6 @@ import (
 
 import (
 	"github.com/AlexStocks/dubbogo/client"
-	"github.com/AlexStocks/dubbogo/codec/jsonrpc"
 	"github.com/AlexStocks/dubbogo/common"
 	"github.com/AlexStocks/dubbogo/registry"
 	"github.com/AlexStocks/dubbogo/selector"
@@ -74,7 +73,7 @@ func (u User) String() string {
 var (
 	connectTimeout  time.Duration = 100e6
 	survivalTimeout int           = 10e9
-	rpcClient       client.Client
+	rpcClient       map[string]client.Client
 )
 
 func main() {
@@ -88,39 +87,40 @@ func main() {
 		return
 	}
 	initProfiling()
-	rpcClient = initClient()
+	initClient()
 
-	go test("A003")
-	go test("A000")
+	go testJsonrpc("A003")
+	go testJsonrpc("A000")
 
 	initSignal()
 }
 
-func initClient() client.Client {
+func initClient() {
 	var (
 		ok              bool
 		err             error
 		ttl             time.Duration
 		reqTimeout      time.Duration
+		protocol        string
 		registryNew     RegistryNew
 		selectorNew     SelectorNew
 		transportNew    TransportNew
 		clientRegistry  registry.Registry
 		clientSelector  selector.Selector
 		clientTransport transport.Transport
-		clt             client.Client
+		cltConfig       DubbogoClientConfig
 	)
 
 	if conf == nil {
 		panic(fmt.Sprintf("conf is nil"))
-		return nil
+		return
 	}
 
 	// registry
 	registryNew, ok = DefaultRegistries[conf.Registry]
 	if !ok {
 		panic(fmt.Sprintf("illegal registry conf{%v}", conf.Registry))
-		return nil
+		return
 	}
 	clientRegistry = registryNew(
 		registry.ApplicationConf(conf.Application_Config),
@@ -128,13 +128,13 @@ func initClient() client.Client {
 	)
 	if clientRegistry == nil {
 		panic("fail to init registry.Registy")
-		return nil
+		return
 	}
 	for _, service := range conf.Service_List {
 		err = clientRegistry.Register(service)
 		if err != nil {
 			panic(fmt.Sprintf("registry.Register(service{%#v}) = error{%v}", service, err))
-			return nil
+			return
 		}
 	}
 
@@ -142,7 +142,7 @@ func initClient() client.Client {
 	selectorNew, ok = DefaultSelectors[conf.Selector]
 	if !ok {
 		panic(fmt.Sprintf("illegal selector conf{%v}", conf.Selector))
-		return nil
+		return
 	}
 	clientSelector = selectorNew(
 		selector.Registry(clientRegistry),
@@ -150,56 +150,62 @@ func initClient() client.Client {
 	)
 	if clientSelector == nil {
 		panic(fmt.Sprintf("NewSelector(opts{registry{%#v}}) = nil", clientRegistry))
-		return nil
-	}
-
-	// transport
-	transportNew, ok = DefaultTransports[conf.Transport]
-	if !ok {
-		panic(fmt.Sprintf("illegal transport conf{%v}", conf.Transport))
-		return nil
-	}
-	clientTransport = transportNew()
-	if clientTransport == nil {
-		panic(fmt.Sprintf("TransportNew(type{%s}) = nil", conf.Transport))
-		return nil
+		return
 	}
 
 	// consumer
 	ttl, err = time.ParseDuration(conf.Pool_TTL)
 	if err != nil {
 		panic(fmt.Sprintf("time.ParseDuration(Pool_TTL{%#v}) = error{%v}", conf.Pool_TTL, err))
-		return nil
+		return
 	}
 	reqTimeout, err = time.ParseDuration(conf.Request_Timeout)
 	if err != nil {
 		panic(fmt.Sprintf("time.ParseDuration(Request_Timeout{%#v}) = error{%v}", conf.Request_Timeout, err))
-		return nil
+		return
 	}
 	connectTimeout, err = time.ParseDuration(conf.Connect_Timeout)
 	if err != nil {
 		panic(fmt.Sprintf("time.ParseDuration(Connect_Timeout{%#v}) = error{%v}", conf.Connect_Timeout, err))
-		return nil
+		return
 	}
 	// ttl, err = (conf.Request_Timeout)
 	gxlog.CInfo("consumer retries:%d", conf.Retries)
-	clt = client.NewClient(
-		client.Retries(conf.Retries),
-		client.PoolSize(conf.Pool_Size),
-		client.PoolTTL(ttl),
-		client.RequestTimeout(reqTimeout),
-		client.Registry(clientRegistry),
-		client.Selector(clientSelector),
-		client.Transport(clientTransport),
-		client.Codec(DefaultContentTypes[conf.Content_Type], jsonrpc.NewCodec),
-		client.ContentType(DefaultContentTypes[conf.Content_Type]),
-	)
+	for idx := range conf.Service_List {
+		protocol = conf.Service_List[idx].Protocol
+		cltConfig = DefaultDubbogoClientConfig[protocol]
 
-	return clt
+		// transport
+		transportNew, ok = DefaultTransports[cltConfig.transportType]
+		if !ok {
+			panic(fmt.Sprintf("illegal transport conf{%v}", cltConfig.transportType))
+			return
+		}
+		clientTransport = transportNew()
+		if clientTransport == nil {
+			panic(fmt.Sprintf("TransportNew(type{%s}) = nil", cltConfig.transportType))
+			return
+		}
+
+		gxlog.CError("start to build %s protocol client", protocol)
+		rpcClient[protocol] = client.NewClient(
+			client.Retries(conf.Retries),
+			client.PoolSize(conf.Pool_Size),
+			client.PoolTTL(ttl),
+			client.RequestTimeout(reqTimeout),
+			client.Registry(clientRegistry),
+			client.Selector(clientSelector),
+			client.Transport(clientTransport),
+			client.Codec(DefaultContentTypes[cltConfig.contentType], cltConfig.codec),
+			client.ContentType(cltConfig.contentType),
+		)
+	}
 }
 
 func uninitClient() {
-	rpcClient.Close()
+	for k := range rpcClient {
+		rpcClient[k].Close()
+	}
 	rpcClient = nil
 	log.Close()
 }
@@ -253,7 +259,7 @@ func initSignal() {
 	}
 }
 
-func test(userKey string) {
+func testJsonrpc(userKey string) {
 	var (
 		err error
 
@@ -262,12 +268,14 @@ func test(userKey string) {
 		user    *User
 		ctx     context.Context
 		req     client.Request
+		clt     client.Client
 	)
 
 	// Create request
 	service = string("com.ikurento.user.UserProvider")
 	method = string("GetUser")
-	req = rpcClient.NewJsonRequest(service, method, []string{userKey})
+	clt = rpcClient["jsonrpc"]
+	req = clt.NewJsonRequest(service, method, []string{userKey})
 	// 注意这里，如果userKey是一个叫做UserKey类型的对象，则最后一个参数应该是 []UserKey{userKey}
 
 	// Set arbitrary headers in context
@@ -279,7 +287,7 @@ func test(userKey string) {
 
 	user = new(User)
 	// Call service
-	if err = rpcClient.Call(ctx, req, user, client.WithDialTimeout(connectTimeout)); err != nil {
+	if err = clt.Call(ctx, req, user, client.WithDialTimeout(connectTimeout)); err != nil {
 		gxlog.CError("client.Call() return error:", err)
 		return
 	}
