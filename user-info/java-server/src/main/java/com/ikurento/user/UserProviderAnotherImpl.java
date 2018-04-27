@@ -85,4 +85,12 @@ public class UserProviderAnotherImpl implements UserProvider {
 
         return map;
     }
+
+    public int Calc(int a,int b) {
+        return a + b + 100;
+    }
+
+    public Response<Integer> Sum(int a,int b) {
+        return Response.ok(a+b);
+    }
 }

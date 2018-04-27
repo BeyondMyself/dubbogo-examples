@@ -62,4 +62,13 @@ public class UserProviderImpl implements UserProvider {
     public User getUser(int userCode) {
         return new User(String.valueOf(userCode), "userCode get", 48);
     }
+
+
+    public int Calc(int a,int b) {
+        return a + b;
+    }
+
+     public Response<Integer> Sum(int a,int b) {
+        return Response.ok(a+b);
+    }
 }

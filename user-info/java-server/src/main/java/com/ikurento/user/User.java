@@ -4,9 +4,6 @@ package com.ikurento.user;
 import java.util.Date;
 import java.io.Serializable;
 
-/**
- * Created by wuwen on 15/4/7.
- */
 public class User implements Serializable  {
 
     private String id;

@@ -17,4 +17,8 @@ public interface UserProvider {
     User queryUser(User user);
 
     Map<String, User> queryAll();
+
+    int Calc(int a,int b);
+
+    Response<Integer> Sum(int a, int b);
 }
