@@ -3,7 +3,7 @@
 # DESC    : build script for dev env
 # AUTHOR  : Alex Stocks
 # VERSION : 1.0
-# LICENCE : LGPL V3
+# LICENCE : Apache License 2.0
 # EMAIL   : alexstocks@foxmail.com
 # MOD     : 2017-10-18 13:24
 # FILE    : dev.sh
@@ -15,7 +15,7 @@ set -e
 export GOOS=linux
 export GOARCH=amd64
 
-PROFILE=dev
+export PROFILE="dev"
 
 PROJECT_HOME=`pwd`
 

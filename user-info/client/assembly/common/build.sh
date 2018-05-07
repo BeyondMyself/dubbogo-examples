@@ -3,7 +3,7 @@
 # DESC    : build script
 # AUTHOR  : Alex Stocks
 # VERSION : 1.0
-# LICENCE : LGPL V3
+# LICENCE : Apache License 2.0
 # EMAIL   : alexstocks@foxmail.com
 # MOD     : 2016-07-12 16:28
 # FILE    : build.sh
@@ -20,7 +20,7 @@ if [[ ${GOOS} == "windows" ]]; then
     TARGET_SBIN_NAME=${TARGET_SBIN_NAME}.exe
 fi
 TARGET_NAME=${TARGET_FOLDER}/${TARGET_SBIN_NAME}
-if [[ $PROFILE == "test" || $PROFILE == "dev" ]]; then
+if [[ $PROFILE == "dev" ||  $PROFILE == "test" ]]; then
     # GFLAGS=-gcflags "-N -l" -race -x -v # -x会把go build的详细过程输出
     # GFLAGS=-gcflags "-N -l" -race -v
     # GFLAGS="-gcflags \"-N -l\" -v"
