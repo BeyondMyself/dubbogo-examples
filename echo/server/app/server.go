@@ -21,6 +21,7 @@ import (
 
 import (
 	log "github.com/AlexStocks/log4go"
+	jerrors "github.com/juju/errors"
 )
 
 import (
@@ -43,7 +44,7 @@ func main() {
 
 	err = configInit()
 	if err != nil {
-		log.Error("configInit() = error{%#v}", err)
+		log.Error("configInit() = error{%#v}", jerrors.ErrorStack(err))
 		return
 	}
 	initProfiling()

@@ -14,7 +14,7 @@ APP_ARGS=""
 
 PROJECT_HOME=""
 OS_NAME=`uname`
-if [[ ${OS_NAME} == "Linux" ]]; then
+if [[ ${OS_NAME} != "Windows" ]]; then
     PROJECT_HOME=`pwd`
     PROJECT_HOME=${PROJECT_HOME}"/"
 fi
@@ -40,21 +40,21 @@ start() {
     CMD="${APP_BIN}"
     eval ${CMD}
     PID=`ps aux | grep -w ${APP_NAME} | grep -v grep | awk '{print $2}'`
-    if [[ ${OS_NAME} != "Linux" ]]; then
+    if [[ ${OS_NAME} != "Linux" && ${OS_NAME} != "Darwin" ]]; then
         PID=`ps aux | grep -w ${APP_NAME} | grep -v grep | awk '{print $1}'`
     fi
-    if [ "${PID}" != "" ];
-    then
+    CUR=`date +%FT%T`
+    if [ "${PID}" != "" ]; then
         for p in ${PID}
         do
-            echo "start ${APP_NAME} ( pid =" ${p} ")"
+            echo "start ${APP_NAME} ( pid =" ${p} ") at " ${CUR}
         done
     fi
 }
 
 stop() {
     PID=`ps aux | grep -w ${APP_NAME} | grep -v grep | awk '{print $2}'`
-    if [[ ${OS_NAME} != "Linux" ]]; then
+    if [[ ${OS_NAME} != "Linux" && ${OS_NAME} != "Darwin" ]]; then
         PID=`ps aux | grep -w ${APP_NAME} | grep -v grep | awk '{print $1}'`
     fi
     if [ "${PID}" != "" ];
@@ -70,7 +70,7 @@ stop() {
 
 term() {
     PID=`ps aux | grep -w ${APP_NAME} | grep -v grep | awk '{print $2}'`
-    if [[ ${OS_NAME} != "Linux" ]]; then
+    if [[ ${OS_NAME} != "Linux" && ${OS_NAME} != "Darwin" ]]; then
         PID=`ps aux | grep -w ${APP_NAME} | grep -v grep | awk '{print $1}'`
     fi
     if [ "${PID}" != "" ];
@@ -85,15 +85,14 @@ term() {
 
 list() {
     PID=`ps aux | grep -w ${APP_NAME} | grep -v grep | awk '{printf("%s,%s,%s,%s\n", $1, $2, $9, $10)}'`
-    if [[ ${OS_NAME} != "Linux" ]]; then
+    if [[ ${OS_NAME} != "Linux" && ${OS_NAME} != "Darwin" ]]; then
         PID=`ps aux | grep -w ${APP_NAME} | grep -v grep | awk '{printf("%s,%s,%s,%s,%s\n", $1, $4, $6, $7, $8)}'`
     fi
 
-    if [ "${PID}" != "" ];
-    then
+    if [ "${PID}" != "" ]; then
         echo "list ${APP_NAME}"
 
-        if [[ ${OS_NAME} == "Linux" ]]; then
+        if [[ ${OS_NAME} == "Linux" || ${OS_NAME} == "Darwin" ]]; then
             echo "index: user, pid, start, duration"
 	else
             echo "index: PID, WINPID, UID, STIME, COMMAND"

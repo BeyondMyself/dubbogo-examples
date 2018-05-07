@@ -25,6 +25,7 @@ import (
 import (
 	"github.com/AlexStocks/goext/log"
 	log "github.com/AlexStocks/log4go"
+	jerrors "github.com/juju/errors"
 )
 
 import (
@@ -59,7 +60,7 @@ func main() {
 
 	err = initClientConf()
 	if err != nil {
-		log.Error("initClientConf() = error{%#v}", err)
+		log.Error("initClientConf() = error{%#v}", jerrors.ErrorStack(err))
 		return
 	}
 	initProfiling()
@@ -107,7 +108,7 @@ func initClient() client.Client {
 	for _, service := range conf.Service_List {
 		err = clientRegistry.Register(service)
 		if err != nil {
-			panic(fmt.Sprintf("registry.Register(service{%#v}) = error{%v}", service, err))
+			panic(fmt.Sprintf("registry.Register(service{%#v}) = error{%+v}", service, jerrors.ErrorStack(err)))
 			return nil
 		}
 	}
@@ -142,17 +143,19 @@ func initClient() client.Client {
 	// consumer
 	ttl, err = time.ParseDuration(conf.Pool_TTL)
 	if err != nil {
-		panic(fmt.Sprintf("time.ParseDuration(Pool_TTL{%#v}) = error{%v}", conf.Pool_TTL, err))
+		panic(fmt.Sprintf("time.ParseDuration(Pool_TTL{%#v}) = error{%v}", conf.Pool_TTL, jerrors.ErrorStack(err)))
 		return nil
 	}
 	reqTimeout, err = time.ParseDuration(conf.Request_Timeout)
 	if err != nil {
-		panic(fmt.Sprintf("time.ParseDuration(Request_Timeout{%#v}) = error{%v}", conf.Request_Timeout, err))
+		panic(fmt.Sprintf("time.ParseDuration(Request_Timeout{%#v}) = error{%v}",
+			conf.Request_Timeout, jerrors.ErrorStack(err)))
 		return nil
 	}
 	connectTimeout, err = time.ParseDuration(conf.Connect_Timeout)
 	if err != nil {
-		panic(fmt.Sprintf("time.ParseDuration(Connect_Timeout{%#v}) = error{%v}", conf.Connect_Timeout, err))
+		panic(fmt.Sprintf("time.ParseDuration(Connect_Timeout{%#v}) = error{%v}",
+			conf.Connect_Timeout, jerrors.ErrorStack(err)))
 		return nil
 	}
 	// ttl, err = (conf.Request_Timeout)
@@ -244,7 +247,7 @@ func test() {
 	key = conf.Test_String
 
 	// Create request
-	service = string("com.youni.HelloService")
+	service = string("com.ikurento.HelloService")
 	method = string("Echo")
 	req = rpcClient.NewJsonRequest(service, method, []string{key})
 
@@ -288,9 +291,7 @@ func test() {
 		}(idx)
 		gxlog.CInfo("loop index:%d", idx)
 	}
-	gxlog.CInfo("test wg wait")
 	wg.Wait()
-	gxlog.CInfo("test wg wait over")
 
 	for idx = 0; idx < conf.Loop_Number; idx++ {
 		sum += diff[idx]

@@ -26,7 +26,7 @@ func (this *Hello) Echo(ctx context.Context, req []string, rsp *string) error {
 }
 
 func (this *Hello) Service() string {
-	return "com.youni.HelloService"
+	return "com.ikurento.HelloService"
 }
 
 func (this *Hello) Version() string {
