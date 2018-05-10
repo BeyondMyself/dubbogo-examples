@@ -23,70 +23,20 @@ import (
 )
 
 import (
-	"github.com/AlexStocks/dubbogo/codec"
-	"github.com/AlexStocks/dubbogo/codec/hessian"
-	"github.com/AlexStocks/dubbogo/codec/jsonrpc"
 	"github.com/AlexStocks/dubbogo/common"
 	"github.com/AlexStocks/dubbogo/registry"
-	"github.com/AlexStocks/dubbogo/registry/zk"
-	"github.com/AlexStocks/dubbogo/selector"
-	"github.com/AlexStocks/dubbogo/selector/cache"
-	"github.com/AlexStocks/dubbogo/transport"
 )
 
 const (
-	APP_CONF_FILE     string = "APP_CONF_FILE"
-	APP_LOG_CONF_FILE string = "APP_LOG_CONF_FILE"
-)
-
-type (
-	RegistryNew  func(...registry.Option) registry.Registry
-	SelectorNew  func(...selector.Option) selector.Selector
-	TransportNew func(...transport.Option) transport.Transport
+	APP_CONF_FILE     = "APP_CONF_FILE"
+	APP_LOG_CONF_FILE = "APP_LOG_CONF_FILE"
 )
 
 var (
 	conf *ClientConfig
-
-	DefaultRegistries = map[string]RegistryNew{
-		"zookeeper": zookeeper.NewConsumerZookeeperRegistry,
-	}
-
-	DefaultSelectors = map[string]SelectorNew{
-		"cache": cache.NewSelector,
-	}
-
-	DefaultTransports = map[string]TransportNew{
-		"http": transport.NewHTTPTransport,
-		"tcp":  transport.NewTcpTransport,
-	}
-
-	DefaultContentTypes = map[string]string{
-		"jsonrpc": "application/json",
-		"dubbo":   "application/hessian",
-	}
-
-	DefaultDubbogoClientConfig = map[string]DubbogoClientConfig{
-		"jsonrpc": DubbogoClientConfig{
-			contentType:   "jsonrpc",
-			transportType: "http",
-			codec:         jsonrpc.NewCodec,
-		},
-		"dubbo": DubbogoClientConfig{
-			contentType:   "dubbo",
-			transportType: "tcp",
-			codec:         hessian.NewCodec,
-		},
-	}
 )
 
 type (
-	DubbogoClientConfig struct {
-		contentType   string
-		transportType string
-		codec         codec.NewCodec
-	}
-
 	// Client holds supported types by the multiconfig package
 	ClientConfig struct {
 		// pprof
@@ -102,7 +52,6 @@ type (
 		Pool_TTL        string `default:"1m"`
 		Connect_Timeout string `default:"100ms"`
 
-		// codec & selector & transport & registry
 		// codec & selector & transport & registry
 		Selector     string `default:"cache"`
 		Selector_TTL string `default:"10m"`

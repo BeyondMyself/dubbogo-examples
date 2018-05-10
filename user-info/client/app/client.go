@@ -30,10 +30,10 @@ import (
 
 import (
 	"github.com/AlexStocks/dubbogo/client"
+	"github.com/AlexStocks/dubbogo/codec"
 	"github.com/AlexStocks/dubbogo/common"
 	"github.com/AlexStocks/dubbogo/registry"
 	"github.com/AlexStocks/dubbogo/selector"
-	"github.com/AlexStocks/dubbogo/transport"
 )
 
 type Gender int
@@ -73,7 +73,7 @@ func (u User) String() string {
 var (
 	connectTimeout  time.Duration = 100e6
 	survivalTimeout int           = 10e9
-	rpcClient       map[string]client.Client
+	rpcClient                     = make(map[codec.CodecType]client.Client, 8)
 )
 
 func main() {
@@ -97,18 +97,16 @@ func main() {
 
 func initClient() {
 	var (
-		ok              bool
-		err             error
-		ttl             time.Duration
-		reqTimeout      time.Duration
-		protocol        string
-		registryNew     RegistryNew
-		selectorNew     SelectorNew
-		transportNew    TransportNew
-		clientRegistry  registry.Registry
-		clientSelector  selector.Selector
-		clientTransport transport.Transport
-		cltConfig       DubbogoClientConfig
+		ok             bool
+		err            error
+		ttl            time.Duration
+		reqTimeout     time.Duration
+		protocol       string
+		codecType      codec.CodecType
+		newRegistry    registry.NewRegistry
+		newSelector    selector.NewSelector
+		clientRegistry registry.Registry
+		clientSelector selector.Selector
 	)
 
 	if conf == nil {
@@ -117,12 +115,12 @@ func initClient() {
 	}
 
 	// registry
-	registryNew, ok = DefaultRegistries[conf.Registry]
+	newRegistry, ok = client.DefaultRegistries[conf.Registry]
 	if !ok {
 		panic(fmt.Sprintf("illegal registry conf{%v}", conf.Registry))
 		return
 	}
-	clientRegistry = registryNew(
+	clientRegistry = newRegistry(
 		registry.ApplicationConf(conf.Application_Config),
 		registry.RegistryConf(conf.Registry_Config),
 	)
@@ -139,12 +137,12 @@ func initClient() {
 	}
 
 	// selector
-	selectorNew, ok = DefaultSelectors[conf.Selector]
+	newSelector, ok = client.DefaultSelectors[conf.Selector]
 	if !ok {
 		panic(fmt.Sprintf("illegal selector conf{%v}", conf.Selector))
 		return
 	}
-	clientSelector = selectorNew(
+	clientSelector = newSelector(
 		selector.Registry(clientRegistry),
 		selector.SelectMode(selector.SM_RoundRobin),
 	)
@@ -169,36 +167,24 @@ func initClient() {
 		panic(fmt.Sprintf("time.ParseDuration(Connect_Timeout{%#v}) = error{%v}", conf.Connect_Timeout, err))
 		return
 	}
-	// ttl, err = (conf.Request_Timeout)
 	gxlog.CInfo("consumer retries:%d", conf.Retries)
 	for idx := range conf.Service_List {
-		protocol = conf.Service_List[idx].Protocol
-		cltConfig = DefaultDubbogoClientConfig[protocol]
-
-		// transport
-		transportNew, ok = DefaultTransports[cltConfig.transportType]
-		if !ok {
-			panic(fmt.Sprintf("illegal transport conf{%v}", cltConfig.transportType))
-			return
-		}
-		clientTransport = transportNew()
-		if clientTransport == nil {
-			panic(fmt.Sprintf("TransportNew(type{%s}) = nil", cltConfig.transportType))
-			return
+		codecType = codec.GetCodecType(conf.Service_List[idx].Protocol)
+		if codecType == codec.CODECTYPE_UNKNOWN {
+			panic(fmt.Sprintf("unknown protocol %s", conf.Service_List[idx].Protocol))
 		}
 
-		gxlog.CError("start to build %s protocol client", protocol)
-		rpcClient[protocol] = client.NewClient(
+		gxlog.CInfo("start to build %s protocol client", codecType)
+		rpcClient[codecType] = client.NewClient(
 			client.Retries(conf.Retries),
 			client.PoolSize(conf.Pool_Size),
 			client.PoolTTL(ttl),
 			client.RequestTimeout(reqTimeout),
 			client.Registry(clientRegistry),
 			client.Selector(clientSelector),
-			client.Transport(clientTransport),
-			client.Codec(DefaultContentTypes[cltConfig.contentType], cltConfig.codec),
-			client.ContentType(cltConfig.contentType),
+			client.CodecType(codecType),
 		)
+		gxlog.CInfo("protocol:%s, client:%+v", protocol, rpcClient[codecType])
 	}
 }
 
@@ -274,8 +260,8 @@ func testJsonrpc(userKey string) {
 	// Create request
 	service = string("com.ikurento.user.UserProvider")
 	method = string("GetUser")
-	clt = rpcClient["jsonrpc"]
-	req = clt.NewJsonRequest(service, method, []string{userKey})
+	clt = rpcClient[codec.CODECTYPE_JSONRPC]
+	req = clt.NewRequest(service, method, []string{userKey})
 	// 注意这里，如果userKey是一个叫做UserKey类型的对象，则最后一个参数应该是 []UserKey{userKey}
 
 	// Set arbitrary headers in context
@@ -293,4 +279,5 @@ func testJsonrpc(userKey string) {
 	}
 
 	gxlog.CInfo("response result:%s", user)
+	gxlog.CError("response result:%s", user)
 }
