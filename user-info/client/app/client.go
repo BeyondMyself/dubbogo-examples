@@ -24,54 +24,22 @@ import (
 
 import (
 	"github.com/AlexStocks/goext/log"
-	"github.com/AlexStocks/goext/time"
 	log "github.com/AlexStocks/log4go"
+	jerrors "github.com/juju/errors"
 )
 
 import (
 	"github.com/AlexStocks/dubbogo/client"
 	"github.com/AlexStocks/dubbogo/codec"
+	"github.com/AlexStocks/dubbogo/codec/hessian"
 	"github.com/AlexStocks/dubbogo/common"
 	"github.com/AlexStocks/dubbogo/registry"
 	"github.com/AlexStocks/dubbogo/selector"
 )
 
-type Gender int
-
-const (
-	MAN = iota
-	WOMAN
-)
-
-var genderStrings = [...]string{
-	"MAN",
-	"WOMAN",
-}
-
-func (g Gender) String() string {
-	return genderStrings[g]
-}
-
-type (
-	User struct {
-		Id   string `json:"id"`
-		Name string `json:"name"`
-		Age  int64  `json:"age"`
-		Time int64  `json:"time"`
-		Sex  string `json:"sex"`
-		// Sex Gender `json:"sex"`
-	}
-)
-
-func (u User) String() string {
-	return fmt.Sprintf(
-		"User{Id:%s, Name:%s, Age:%d, Time:%s, Sex:%s}",
-		u.Id, u.Name, u.Age, gxtime.YMDPrint(int(u.Time), 0), u.Sex,
-	)
-}
-
 var (
 	connectTimeout  time.Duration = 100e6
+	requestTimeout  time.Duration = 10e6
 	survivalTimeout int           = 10e9
 	rpcClient                     = make(map[codec.CodecType]client.Client, 8)
 )
@@ -89,8 +57,9 @@ func main() {
 	initProfiling()
 	initClient()
 
+	time.Sleep(3e9) // wait for selector
 	go testJsonrpc("A003")
-	go testJsonrpc("A000")
+	go testHessianGetUsers()
 
 	initSignal()
 }
@@ -251,7 +220,7 @@ func testJsonrpc(userKey string) {
 
 		service string
 		method  string
-		user    *User
+		user    *JsonRPCUser
 		ctx     context.Context
 		req     client.Request
 		clt     client.Client
@@ -271,13 +240,53 @@ func testJsonrpc(userKey string) {
 		"X-Method":   method,
 	})
 
-	user = new(User)
+	user = new(JsonRPCUser)
 	// Call service
 	if err = clt.Call(ctx, req, user, client.WithDialTimeout(connectTimeout)); err != nil {
-		gxlog.CError("client.Call() return error:", err)
+		gxlog.CError("client.Call() return error:%+v", jerrors.ErrorStack(err))
 		return
 	}
 
+	log.Info("response result:%s", user)
 	gxlog.CInfo("response result:%s", user)
-	gxlog.CError("response result:%s", user)
+}
+
+func testHessianGetUsers() {
+	var (
+		err error
+
+		service string
+		method  string
+		args    []interface{}
+		ctx     context.Context
+		req     client.Request
+		rsp     []HessianUser
+		clt     client.Client
+	)
+
+	hessian.RegisterJavaEnum(Gender(MAN))
+	hessian.RegisterPOJO(&HessianUser{})
+
+	// Create request
+	service = string("com.ikurento.user.UserProvider")
+	method = string("GetUsers")
+	args = []interface{}{[]string{"001", "003", "004"}}
+
+	clt = rpcClient[codec.CODECTYPE_DUBBO]
+	req = clt.NewRequest(service, method, args)
+	// Set arbitrary headers in context
+	ctx = context.WithValue(context.Background(), common.DUBBOGO_CTX_KEY, map[string]string{
+		"X-Proxy-Id": "dubbogo",
+		"X-Services": service,
+		"X-Method":   method,
+	})
+
+	// Call service
+	if err = clt.Call(ctx, req, &rsp, client.WithDialTimeout(requestTimeout)); err != nil {
+		gxlog.CError("client.Call() return error:%+v", jerrors.ErrorStack(err))
+		return
+	}
+
+	log.Info("response result:%s", rsp)
+	gxlog.CInfo("response result:%s", rsp)
 }
