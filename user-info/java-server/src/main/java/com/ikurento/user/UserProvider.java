@@ -12,6 +12,8 @@ public interface UserProvider {
 
     List<User> GetUsers(List<String> userIdList);
 
+    Map<String, User> GetUserMap(List<String> userIdList);
+
     User getUser(int usercode);
 
     User queryUser(User user);

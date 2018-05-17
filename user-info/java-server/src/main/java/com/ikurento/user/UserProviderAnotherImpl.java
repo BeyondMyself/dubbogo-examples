@@ -49,6 +49,23 @@ public class UserProviderAnotherImpl implements UserProvider {
         return userList;
     }
 
+    public Map<String, User> GetUserMap(List<String> userIdList) {
+        Iterator it = userIdList.iterator();
+        Map<String, User> map = new HashMap<String, User>();
+        logger.warn("@userIdList size:" + userIdList.size());
+
+        while(it.hasNext()) {
+            String id = (String)(it.next());
+            logger.info("GetUsers(@uid:" + id + ")");
+            if (userMap.containsKey(id)) {
+                map.put(id, userMap.get(id));
+                logger.info("id:" + id + ", user:" + userMap.get(id));
+            }
+        }
+
+        return map;
+    }
+
     public List<User> GetUsers(List<String> userIdList) {
         Iterator it = userIdList.iterator();
         List<User> userList = new ArrayList<User>();

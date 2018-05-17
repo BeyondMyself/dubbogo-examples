@@ -50,6 +50,23 @@ public class UserProviderImpl implements UserProvider {
         return userList;
     }
 
+    public Map<String, User> GetUserMap(List<String> userIdList) {
+        Iterator it = userIdList.iterator();
+        Map<String, User> map = new HashMap<String, User>();
+        LOG.warn("@userIdList size:" + userIdList.size());
+
+        while(it.hasNext()) {
+            String id = (String)(it.next());
+            LOG.info("GetUsers(@uid:" + id + ")");
+            if (userMap.containsKey(id)) {
+                map.put(id, userMap.get(id));
+                LOG.info("id:" + id + ", user:" + userMap.get(id));
+            }
+        }
+
+        return map;
+    }
+
     public User queryUser(User user) {
         return new User(user.getId(), "hello:" +user.getName(), user.getAge() + 18);
     }
