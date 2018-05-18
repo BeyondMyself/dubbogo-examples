@@ -1,7 +1,14 @@
 # dubbogo #
 a golang micro-service framework compatible with alibaba dubbo. just using jsonrpc 2.0 protocol over http now.
 
-## 说明 ##
+## 0.2 说明 ##
+---
+
+[dubbogo](https://github.com/AlexStocks/dubbogo) v0.2 (主要feature是支持原生dubbo协议：基于 tcp 的 hessian2 协议支持) 已经发布，目前只支持go语言客户端，服务端尚未实现。
+
+user-info/client 给出了 go 客户端使用示例，其服务提供端是 user-info/java-server。
+
+## 0.1 说明 ##
 ---
 - 1 dubbogo 目前版本(0.1.1)支持的codec 是jsonrpc 2.0，transport protocol是http。
 - 2 只要你的java程序支持jsonrpc 2.0 over http，那么dubbogo程序就能调用它。

@@ -79,7 +79,7 @@ func testJsonrpc(userKey string) {
 		return
 	}
 
-	log.Info("response result:%s", user)
+	//log.Info("response result:%s", user)
 	gxlog.CInfo("response result:%s", user)
 }
 
@@ -112,7 +112,7 @@ func testDubboCalc() {
 	method = string("Calc")
 	args = []interface{}{int64(1), int64(2)}
 	clt = rpcClient[codec.CODECTYPE_DUBBO]
-	gxlog.CInfo("dubbo selected service %#v", conf.Service_List[serviceIdx])
+	//gxlog.CInfo("dubbo selected service %#v", conf.Service_List[serviceIdx])
 	req = clt.NewRequest(
 		conf.Service_List[serviceIdx].Group,
 		conf.Service_List[serviceIdx].Version,
@@ -127,7 +127,7 @@ func testDubboCalc() {
 		return
 	}
 
-	log.Info("response result:%s", rsp)
+	log.Info("response result:%+v", rsp)
 }
 
 // test struct
