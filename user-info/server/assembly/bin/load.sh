@@ -3,7 +3,7 @@
 # DESC    : dubbogo app devops script
 # AUTHOR  : Alex Stocks
 # VERSION : 1.0
-# LICENCE : LGPL V3
+# LICENCE : Apache License 2.0
 # EMAIL   : alexstocks@foxmail.com
 # MOD     : 2016-05-13 02:01
 # FILE    : load.sh

@@ -2,7 +2,7 @@
 // DESC    : dubbo consumer
 // AUTHOR  : writtey by 包增辉(https://github.com/baozh)
 // VERSION : 1.0
-// LICENCE : LGPL V3
+// LICENCE : Apache License 2.0
 // EMAIL   : alexstocks@foxmail.com
 // MOD     : 2016-10-19 17:03
 // FILE    : Consumer.java
