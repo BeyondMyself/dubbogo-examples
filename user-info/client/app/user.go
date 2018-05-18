@@ -66,7 +66,7 @@ func (u JsonRPCUser) String() string {
 	)
 }
 
-type HessianUser struct {
+type DubboUser struct {
 	Id   string
 	Name string
 	Age  int32
@@ -74,14 +74,14 @@ type HessianUser struct {
 	Sex  Gender // 注意此处，java enum Object <--> go string
 }
 
-func (u HessianUser) String() string {
+func (u DubboUser) String() string {
 	return fmt.Sprintf(
 		"User{Id:%s, Name:%s, Age:%d, Time:%s, Sex:%s}",
 		u.Id, u.Name, u.Age, u.Time, u.Sex,
 	)
 }
 
-func (HessianUser) JavaClassName() string {
+func (DubboUser) JavaClassName() string {
 	return "com.ikurento.user.User"
 }
 
@@ -101,49 +101,3 @@ func (r Response) String() string {
 func (Response) JavaClassName() string {
 	return "com.ikurento.user.Response"
 }
-
-/*
-func testCalc() {
-	var tcpAddress = "192.168.102.201:20000"
-
-	dubboCtx := &DubboCtx{
-		Path:    "com.ikurento.user.UserProvider2", // 注意此处的值是path
-		Service: "com.ikurento.user.UserProvider",
-		Method:  "Calc",
-		Version: "2.0",
-		Timeout: 500,
-		Return:  reflect.TypeOf(int32(0)),
-	}
-
-	var args = []interface{}{int64(1), int64(2)}
-	ret, err := SendHession(tcpAddress, dubboCtx, args)
-	if err != nil {
-		jerrors.ErrorStack(err)
-		return
-	}
-	fmt.Println("ret:", gxlog.ColorSprint(ret))
-}
-
-func testSum() {
-	var tcpAddress = "127.0.0.1:20000"
-	hessian.RegisterPOJO(&Response{})
-
-	dubboCtx := &DubboCtx{
-		Path:    "com.ikurento.user.UserProvider2", // 注意此处的值是path
-		Service: "com.ikurento.user.UserProvider",
-		Method:  "Sum",
-		Version: "2.0",
-		Timeout: 500,
-		Return:  reflect.TypeOf(Response{}),
-	}
-
-	var args = []interface{}{int64(1), int64(2)}
-	ret, err := SendHession(tcpAddress, dubboCtx, args)
-	if err != nil {
-		fmt.Printf("Sum(1, 2) = error:%q", jerrors.ErrorStack(err))
-		return
-	}
-	fmt.Println("ret:", gxlog.ColorSprint(ret))
-}
-
-*/

@@ -11,7 +11,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	_ "net/http/pprof"
@@ -25,7 +24,6 @@ import (
 import (
 	"github.com/AlexStocks/goext/log"
 	log "github.com/AlexStocks/log4go"
-	jerrors "github.com/juju/errors"
 )
 
 import (
@@ -57,10 +55,22 @@ func main() {
 	initProfiling()
 	initClient()
 
-	//time.Sleep(3e9) // wait for selector
-	//go testJsonrpc("A003")
-	//time.Sleep(4e9)
-	testHessianGetUsers()
+	hessian.RegisterJavaEnum(Gender(MAN))
+	hessian.RegisterPOJO(&DubboUser{})
+	hessian.RegisterPOJO(&Response{})
+
+	time.Sleep(1e9) // wait for selector
+
+	gxlog.CInfo("\n\n\nstart to test jsonrpc")
+	testJsonrpc("A003")
+	gxlog.CInfo("\n\n\nstart to test dubbo Calc")
+	testDubboCalc()
+	gxlog.CInfo("\n\n\nstart to test dubbo Sum")
+	testDubboSum()
+	gxlog.CInfo("\n\n\nstart to test dubbo GetUsers")
+	testDubboGetUsers()
+	gxlog.CInfo("\n\n\nstart to test dubbo GetUserMap")
+	testDubboGetUserMap()
 
 	initSignal()
 }
@@ -143,7 +153,6 @@ func initClient() {
 			panic(fmt.Sprintf("unknown protocol %s", conf.Service_List[idx].Protocol))
 		}
 
-		gxlog.CInfo("start to build %s protocol client", codecType)
 		rpcClient[codecType] = client.NewClient(
 			client.Retries(conf.Retries),
 			client.PoolSize(conf.Pool_Size),
@@ -153,7 +162,6 @@ func initClient() {
 			client.Selector(clientSelector),
 			client.CodecType(codecType),
 		)
-		gxlog.CInfo("protocol:%s, client:%+v", conf.Service_List[idx].Protocol, rpcClient[codecType])
 	}
 }
 
@@ -212,109 +220,4 @@ func initSignal() {
 			return
 		}
 	}
-}
-
-func testJsonrpc(userKey string) {
-	var (
-		err        error
-		service    string
-		method     string
-		serviceIdx int
-		user       *JsonRPCUser
-		ctx        context.Context
-		req        client.Request
-		clt        client.Client
-	)
-
-	serviceIdx = -1
-	service = "com.ikurento.user.UserProvider"
-	for i := range conf.Service_List {
-		if conf.Service_List[i].Service == service && conf.Service_List[i].Protocol == codec.CODECTYPE_JSONRPC.String() {
-			serviceIdx = i
-			break
-		}
-	}
-	if serviceIdx == -1 {
-		panic(fmt.Sprintf("can not find service in config service list:%#v", conf.Service_List))
-	}
-
-	// Create request
-	method = string("GetUser")
-	clt = rpcClient[codec.CODECTYPE_JSONRPC]
-	// 注意这里，如果userKey是一个叫做UserKey类型的对象，则最后一个参数应该是 []UserKey{userKey}
-	gxlog.CInfo("jsonrpc selected service %#v", conf.Service_List[serviceIdx])
-	req = clt.NewRequest(
-		conf.Service_List[serviceIdx].Group,
-		conf.Service_List[serviceIdx].Version,
-		service,
-		method,
-		[]string{userKey},
-	)
-
-	// Set arbitrary headers in context
-	ctx = context.WithValue(context.Background(), common.DUBBOGO_CTX_KEY, map[string]string{
-		"X-Proxy-Id": "dubbogo",
-		"X-Services": service,
-		"X-Method":   method,
-	})
-
-	user = new(JsonRPCUser)
-	// Call service
-	if err = clt.Call(ctx, req, user, client.WithDialTimeout(connectTimeout)); err != nil {
-		gxlog.CError("client.Call() return error:%+v", jerrors.ErrorStack(err))
-		return
-	}
-
-	log.Info("response result:%s", user)
-	gxlog.CInfo("response result:%s", user)
-}
-
-func testHessianGetUsers() {
-	var (
-		err        error
-		service    string
-		method     string
-		serviceIdx int
-		args       []interface{}
-		req        client.Request
-		rsp        []HessianUser
-		clt        client.Client
-	)
-
-	hessian.RegisterJavaEnum(Gender(MAN))
-	hessian.RegisterPOJO(&HessianUser{})
-
-	serviceIdx = -1
-	service = "com.ikurento.user.UserProvider"
-	for i := range conf.Service_List {
-		if conf.Service_List[i].Service == service && conf.Service_List[i].Protocol == codec.CODECTYPE_DUBBO.String() {
-			serviceIdx = i
-			break
-		}
-	}
-	if serviceIdx == -1 {
-		panic(fmt.Sprintf("can not find service in config service list:%+v", conf.Service_List))
-	}
-
-	// Create request
-	method = string("GetUsers")
-	args = []interface{}{[]string{"001", "003", "004"}}
-	clt = rpcClient[codec.CODECTYPE_DUBBO]
-	gxlog.CInfo("dubbo selected service %#v", conf.Service_List[serviceIdx])
-	req = clt.NewRequest(
-		conf.Service_List[serviceIdx].Group,
-		conf.Service_List[serviceIdx].Version,
-		service,
-		method,
-		args,
-	)
-
-	// Call service
-	if err = clt.Call(context.Background(), req, &rsp, client.WithDialTimeout(requestTimeout)); err != nil {
-		gxlog.CError("client.Call() return error:%+v", jerrors.ErrorStack(err))
-		return
-	}
-
-	log.Info("response result:%s", rsp)
-	gxlog.CInfo("response result:%s", rsp)
 }
