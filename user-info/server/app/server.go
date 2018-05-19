@@ -137,7 +137,7 @@ func initServer() server.Server {
 		server.Codec(codecs),
 		server.Registry(serverRegistry),
 		server.Transport(serverTransport),
-		server.ServerConfList(conf.Server_List),
+		server.ConfList(conf.Server_List),
 		server.ServiceConfList(conf.Service_List),
 	)
 
