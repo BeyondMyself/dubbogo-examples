@@ -30,11 +30,10 @@ import (
 
 import (
 	"github.com/AlexStocks/dubbogo/client"
-	"github.com/AlexStocks/dubbogo/codec/jsonrpc"
+	"github.com/AlexStocks/dubbogo/codec"
 	"github.com/AlexStocks/dubbogo/common"
 	"github.com/AlexStocks/dubbogo/registry"
 	"github.com/AlexStocks/dubbogo/selector"
-	"github.com/AlexStocks/dubbogo/transport"
 )
 
 type (
@@ -50,7 +49,7 @@ type (
 var (
 	connectTimeout  time.Duration = 100e6
 	survivalTimeout int           = 10e9
-	rpcClient       client.Client
+	rpcClient                     = make(map[codec.CodecType]client.Client, 8)
 )
 
 func main() {
@@ -64,38 +63,36 @@ func main() {
 		return
 	}
 	initProfiling()
-	rpcClient = initClient()
+	initClient()
 
 	go test()
 
 	initSignal()
 }
 
-func initClient() client.Client {
+func initClient() {
 	var (
-		ok              bool
-		err             error
-		ttl             time.Duration
-		reqTimeout      time.Duration
-		registryNew     RegistryNew
-		selectorNew     SelectorNew
-		transportNew    TransportNew
-		clientRegistry  registry.Registry
-		clientSelector  selector.Selector
-		clientTransport transport.Transport
-		clt             client.Client
+		ok             bool
+		err            error
+		ttl            time.Duration
+		reqTimeout     time.Duration
+		codecType      codec.CodecType
+		registryNew    RegistryNew
+		selectorNew    SelectorNew
+		clientRegistry registry.Registry
+		clientSelector selector.Selector
 	)
 
 	if conf == nil {
 		panic(fmt.Sprintf("conf is nil"))
-		return nil
+		return
 	}
 
 	// registry
 	registryNew, ok = DefaultRegistries[conf.Registry]
 	if !ok {
 		panic(fmt.Sprintf("illegal registry conf{%v}", conf.Registry))
-		return nil
+		return
 	}
 	clientRegistry = registryNew(
 		registry.ApplicationConf(conf.Application_Config),
@@ -103,13 +100,13 @@ func initClient() client.Client {
 	)
 	if clientRegistry == nil {
 		panic("fail to init registry.Registy")
-		return nil
+		return
 	}
 	for _, service := range conf.Service_List {
 		err = clientRegistry.Register(service)
 		if err != nil {
 			panic(fmt.Sprintf("registry.Register(service{%#v}) = error{%+v}", service, jerrors.ErrorStack(err)))
-			return nil
+			return
 		}
 	}
 
@@ -117,7 +114,7 @@ func initClient() client.Client {
 	selectorNew, ok = DefaultSelectors[conf.Selector]
 	if !ok {
 		panic(fmt.Sprintf("illegal selector conf{%v}", conf.Selector))
-		return nil
+		return
 	}
 	clientSelector = selectorNew(
 		selector.Registry(clientRegistry),
@@ -125,58 +122,53 @@ func initClient() client.Client {
 	)
 	if clientSelector == nil {
 		panic(fmt.Sprintf("NewSelector(opts{registry{%#v}}) = nil", clientRegistry))
-		return nil
-	}
-
-	// transport
-	transportNew, ok = DefaultTransports[conf.Transport]
-	if !ok {
-		panic(fmt.Sprintf("illegal transport conf{%v}", conf.Transport))
-		return nil
-	}
-	clientTransport = transportNew()
-	if clientTransport == nil {
-		panic(fmt.Sprintf("TransportNew(type{%s}) = nil", conf.Transport))
-		return nil
+		return
 	}
 
 	// consumer
 	ttl, err = time.ParseDuration(conf.Pool_TTL)
 	if err != nil {
 		panic(fmt.Sprintf("time.ParseDuration(Pool_TTL{%#v}) = error{%v}", conf.Pool_TTL, jerrors.ErrorStack(err)))
-		return nil
+		return
 	}
 	reqTimeout, err = time.ParseDuration(conf.Request_Timeout)
 	if err != nil {
 		panic(fmt.Sprintf("time.ParseDuration(Request_Timeout{%#v}) = error{%v}",
 			conf.Request_Timeout, jerrors.ErrorStack(err)))
-		return nil
+		return
 	}
 	connectTimeout, err = time.ParseDuration(conf.Connect_Timeout)
 	if err != nil {
 		panic(fmt.Sprintf("time.ParseDuration(Connect_Timeout{%#v}) = error{%v}",
 			conf.Connect_Timeout, jerrors.ErrorStack(err)))
-		return nil
+		return
 	}
 	// ttl, err = (conf.Request_Timeout)
 	gxlog.CInfo("consumer retries:%d", conf.Retries)
-	clt = client.NewClient(
-		client.Retries(conf.Retries),
-		client.PoolSize(conf.Pool_Size),
-		client.PoolTTL(ttl),
-		client.RequestTimeout(reqTimeout),
-		client.Registry(clientRegistry),
-		client.Selector(clientSelector),
-		client.Transport(clientTransport),
-		client.Codec(DefaultContentTypes[conf.Content_Type], jsonrpc.NewCodec),
-		client.ContentType(DefaultContentTypes[conf.Content_Type]),
-	)
+	for idx := range conf.Service_List {
+		codecType = codec.GetCodecType(conf.Service_List[idx].Protocol)
+		if codecType == codec.CODECTYPE_UNKNOWN {
+			panic(fmt.Sprintf("unknown protocol %s", conf.Service_List[idx].Protocol))
+		}
 
-	return clt
+		rpcClient[codecType] = client.NewClient(
+			client.Retries(conf.Retries),
+			client.PoolSize(conf.Pool_Size),
+			client.PoolTTL(ttl),
+			client.RequestTimeout(reqTimeout),
+			client.Registry(clientRegistry),
+			client.Selector(clientSelector),
+			client.CodecType(codecType),
+		)
+	}
+
+	return
 }
 
 func uninitClient() {
-	rpcClient.Close()
+	for k := range rpcClient {
+		rpcClient[k].Close()
+	}
 	rpcClient = nil
 	log.Close()
 }
@@ -242,14 +234,33 @@ func test() {
 		wg      sync.WaitGroup
 		sum     time.Duration
 		diff    []time.Duration
+		clt     client.Client
 	)
+
+	idx = -1
+	service = string("com.ikurento.HelloService")
+	for i := range conf.Service_List {
+		if conf.Service_List[i].Service == service && conf.Service_List[i].Protocol == codec.CODECTYPE_JSONRPC.String() {
+			idx = i
+			break
+		}
+	}
+	if idx == -1 {
+		panic(fmt.Sprintf("can not find service in config service list:%#v", conf.Service_List))
+	}
 
 	key = conf.Test_String
 
 	// Create request
-	service = string("com.ikurento.HelloService")
 	method = string("Echo")
-	req = rpcClient.NewJsonRequest(service, method, []string{key})
+	clt = rpcClient[codec.CODECTYPE_JSONRPC]
+	req = clt.NewRequest(
+		conf.Service_List[idx].Group,
+		conf.Service_List[idx].Version,
+		service,
+		method,
+		[]string{key},
+	)
 
 	// Set arbitrary headers in context
 	ctx = context.WithValue(context.Background(), common.DUBBOGO_CTX_KEY, map[string]string{
@@ -271,7 +282,7 @@ func test() {
 			// Call service
 			start = time.Now()
 			for index = 0; index < conf.Loop_Number; index++ {
-				if err = rpcClient.Call(ctx, req, &rsp, client.WithDialTimeout(connectTimeout)); err != nil {
+				if err = clt.Call(ctx, req, &rsp, client.WithDialTimeout(connectTimeout)); err != nil {
 					gxlog.CError("client.Call() return error:%s", err)
 					fail++
 					// return
