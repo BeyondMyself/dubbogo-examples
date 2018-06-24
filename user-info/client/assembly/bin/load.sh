@@ -44,8 +44,8 @@ start() {
     mkdir -p ${APP_LOG_PATH}
     APP_BIN=${PROJECT_HOME}sbin/${APP_NAME}
     chmod u+x ${APP_BIN}
-    # CMD="nohup ${APP_BIN} ${APP_ARGS} >>${APP_NAME}.nohup.out 2>&1 &"
-    CMD="${APP_BIN}"
+    CMD="nohup ${APP_BIN} ${APP_ARGS} >>${APP_NAME}.nohup.out 2>&1 &"
+    # CMD="${APP_BIN}"
     eval ${CMD}
     PID=`ps aux | grep -w ${APP_NAME} | grep -v grep | awk '{print $2}'`
     if [[ ${OS_NAME} != "Linux" && ${OS_NAME} != "Darwin" ]]; then

@@ -1,0 +1,34 @@
+# dubbo server toml configure file
+
+# pprof
+Pprof_Enabled       = true
+Pprof_Port          = 10080
+
+# server
+Transport			= "http"
+Registry			= "zookeeper"
+
+# application config
+[Application_Config]
+Organization        = "ikurento.com"
+Name                = "Pusher"
+Module              = "dubbogo user-info server"
+Version             = "0.0.1"
+Owner               = "ZX"
+
+[Registry_Config]
+   # You can indent as you please. Tabs or spaces. TOML don't care.
+    Address = ["127.0.0.1:2181"]
+    Timeout = 3
+
+[[Service_List]]
+    Protocol            = "jsonrpc"
+    # 相当于dubbo.xml中的interface
+    Service             = "com.ikurento.user.UserProvider"
+	Retries             = 1
+
+[[Server_List]]
+    IP                  = ""
+	Port                = 20000
+    # 本server能够提供所有支持同样的Protocol的ServiceList的服务
+	Protocol            = "jsonrpc"
