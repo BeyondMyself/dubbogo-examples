@@ -8,10 +8,6 @@ Pprof_Port              = 10086
 Request_Timeout         = "3500ms"
 NET_IO_Timeout          = "2s"
 Retries                 = 1
-# 连接池中每个地址的最大连接数
-Pool_Size               = 32
-# 连接池中每个连接的有效时间
-Pool_TTL                = "10m"
 # connect timeout
 Connect_Timeout         = "100ms"
 Selector                = "cache"

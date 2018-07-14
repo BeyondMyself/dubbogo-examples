@@ -29,7 +29,6 @@ import (
 import (
 	"github.com/AlexStocks/dubbogo/client"
 	"github.com/AlexStocks/dubbogo/codec"
-	"github.com/AlexStocks/dubbogo/codec/hessian"
 	"github.com/AlexStocks/dubbogo/common"
 	"github.com/AlexStocks/dubbogo/registry"
 	"github.com/AlexStocks/dubbogo/selector"
@@ -55,22 +54,10 @@ func main() {
 	initProfiling()
 	initClient()
 
-	hessian.RegisterJavaEnum(Gender(MAN))
-	hessian.RegisterPOJO(&DubboUser{})
-	hessian.RegisterPOJO(&Response{})
-
 	time.Sleep(1e9) // wait for selector
 
-	// gxlog.CInfo("\n\n\nstart to test jsonrpc")
-	// testJsonrpc("A003")
-	// gxlog.CInfo("\n\n\nstart to test dubbo Calc")
-	testDubboCalc()
-	// gxlog.CInfo("\n\n\nstart to test dubbo Sum")
-	// testDubboSum()
-	// gxlog.CInfo("\n\n\nstart to test dubbo GetUsers")
-	// testDubboGetUsers()
-	// gxlog.CInfo("\n\n\nstart to test dubbo GetUserMap")
-	// testDubboGetUserMap()
+	gxlog.CInfo("\n\n\nstart to test jsonrpc")
+	testJsonrpc("A003")
 
 	initSignal()
 }
@@ -79,7 +66,6 @@ func initClient() {
 	var (
 		ok             bool
 		err            error
-		ttl            time.Duration
 		reqTimeout     time.Duration
 		codecType      codec.CodecType
 		newRegistry    registry.NewRegistry
@@ -131,11 +117,6 @@ func initClient() {
 	}
 
 	// consumer
-	ttl, err = time.ParseDuration(conf.Pool_TTL)
-	if err != nil {
-		panic(fmt.Sprintf("time.ParseDuration(Pool_TTL{%#v}) = error{%v}", conf.Pool_TTL, err))
-		return
-	}
 	reqTimeout, err = time.ParseDuration(conf.Request_Timeout)
 	if err != nil {
 		panic(fmt.Sprintf("time.ParseDuration(Request_Timeout{%#v}) = error{%v}", conf.Request_Timeout, err))
@@ -155,8 +136,6 @@ func initClient() {
 
 		rpcClient[codecType] = client.NewClient(
 			client.Retries(conf.Retries),
-			client.PoolSize(conf.Pool_Size),
-			client.PoolTTL(ttl),
 			client.RequestTimeout(reqTimeout),
 			client.Registry(clientRegistry),
 			client.Selector(clientSelector),
