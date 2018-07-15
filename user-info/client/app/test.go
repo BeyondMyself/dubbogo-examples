@@ -23,7 +23,6 @@ import (
 
 import (
 	"github.com/AlexStocks/dubbogo/client"
-	"github.com/AlexStocks/dubbogo/codec"
 	"github.com/AlexStocks/dubbogo/common"
 )
 
@@ -42,7 +41,7 @@ func testJsonrpc(userKey string) {
 	serviceIdx = -1
 	service = "com.ikurento.user.UserProvider"
 	for i := range conf.Service_List {
-		if conf.Service_List[i].Service == service && conf.Service_List[i].Protocol == codec.CODECTYPE_JSONRPC.String() {
+		if conf.Service_List[i].Service == service && conf.Service_List[i].Protocol == client.CODECTYPE_JSONRPC.String() {
 			serviceIdx = i
 			break
 		}
@@ -53,7 +52,7 @@ func testJsonrpc(userKey string) {
 
 	// Create request
 	method = string("GetUser")
-	clt = rpcClient[codec.CODECTYPE_JSONRPC]
+	clt = rpcClient[client.CODECTYPE_JSONRPC]
 	// 注意这里，如果userKey是一个叫做UserKey类型的对象，则最后一个参数应该是 []UserKey{userKey}
 	gxlog.CInfo("jsonrpc selected service %#v", conf.Service_List[serviceIdx])
 	req = clt.NewRequest(

@@ -28,7 +28,6 @@ import (
 
 import (
 	"github.com/AlexStocks/dubbogo/client"
-	"github.com/AlexStocks/dubbogo/codec"
 	"github.com/AlexStocks/dubbogo/common"
 	"github.com/AlexStocks/dubbogo/registry"
 	"github.com/AlexStocks/dubbogo/selector"
@@ -38,7 +37,7 @@ var (
 	connectTimeout  time.Duration = 100e6
 	requestTimeout  time.Duration = 10e6
 	survivalTimeout int           = 10e9
-	rpcClient                     = make(map[codec.CodecType]client.Client, 8)
+	rpcClient                     = make(map[client.CodecType]client.Client, 8)
 )
 
 func main() {
@@ -67,7 +66,7 @@ func initClient() {
 		ok             bool
 		err            error
 		reqTimeout     time.Duration
-		codecType      codec.CodecType
+		codecType      client.CodecType
 		newRegistry    registry.NewRegistry
 		newSelector    selector.NewSelector
 		clientRegistry registry.Registry
@@ -129,8 +128,8 @@ func initClient() {
 	}
 	gxlog.CInfo("consumer retries:%d", conf.Retries)
 	for idx := range conf.Service_List {
-		codecType = codec.GetCodecType(conf.Service_List[idx].Protocol)
-		if codecType == codec.CODECTYPE_UNKNOWN {
+		codecType = client.GetCodecType(conf.Service_List[idx].Protocol)
+		if codecType == client.CODECTYPE_UNKNOWN {
 			panic(fmt.Sprintf("unknown protocol %s", conf.Service_List[idx].Protocol))
 		}
 
@@ -139,7 +138,7 @@ func initClient() {
 			client.RequestTimeout(reqTimeout),
 			client.Registry(clientRegistry),
 			client.Selector(clientSelector),
-			client.CodecType(codecType),
+			client.ClientCodecType(codecType),
 		)
 	}
 }

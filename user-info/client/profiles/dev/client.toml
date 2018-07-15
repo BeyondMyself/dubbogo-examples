@@ -30,9 +30,3 @@ Owner                   = "ZX"
 [[Service_List]]
     Protocol            = "jsonrpc"
     Service             = "com.ikurento.user.UserProvider"
-
-[[Service_List]]
-    Protocol            = "dubbo"
-    Service             = "com.ikurento.user.UserProvider"
-    Version             = "2.0"
-
