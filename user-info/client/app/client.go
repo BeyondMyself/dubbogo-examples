@@ -23,12 +23,12 @@ import (
 
 import (
 	"github.com/AlexStocks/goext/log"
+	"github.com/AlexStocks/goext/net"
 	log "github.com/AlexStocks/log4go"
 )
 
 import (
 	"github.com/AlexStocks/dubbogo/client"
-	"github.com/AlexStocks/dubbogo/common"
 	"github.com/AlexStocks/dubbogo/registry"
 	"github.com/AlexStocks/dubbogo/selector"
 )
@@ -164,7 +164,7 @@ func initProfiling() {
 		addr string
 	)
 
-	ip, err = common.GetLocalIP(ip)
+	ip, err = gxnet.GetLocalIP()
 	if err != nil {
 		panic("cat not get local ip!")
 	}
@@ -187,7 +187,7 @@ func initSignal() {
 		case syscall.SIGHUP:
 		// reload()
 		default:
-			go common.Future(survivalTimeout, func() {
+			go time.AfterFunc(time.Duration(survivalTimeout)*time.Second, func() {
 				log.Warn("app exit now by force...")
 				os.Exit(1)
 			})
