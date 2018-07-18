@@ -58,7 +58,7 @@ func testJsonrpc(userKey string) {
 	req = clt.NewRequest(
 		conf.Service_List[serviceIdx].Group,
 		conf.Service_List[serviceIdx].Version,
-		service,
+		conf.Service_List[serviceIdx].Service,
 		method,
 		[]string{userKey},
 	)
