@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"time"
 )
 
 import (
@@ -33,7 +34,7 @@ const (
 )
 
 var (
-	conf *ClientConfig
+	clientConfig *ClientConfig
 )
 
 type (
@@ -44,13 +45,11 @@ type (
 		Pprof_Port    int  `default:"10086"`
 
 		// client
-		Request_Timeout string `default:"5s"` // 500ms, 1m
-		NET_IO_Timeout  string `default:"5s"` // 500ms, 1m
-		Retries         int    `default:"1"`
-		// Connection Pool
-		Pool_Size       int    `default:"128"`
-		Pool_TTL        string `default:"1m"`
 		Connect_Timeout string `default:"100ms"`
+		connectTimeout  time.Duration
+
+		Request_Timeout string `default:"5s"` // 500ms, 1m
+		requestTimeout  time.Duration
 
 		// codec & selector & transport & registry
 		Selector     string `default:"cache"`
@@ -79,9 +78,9 @@ func initClientConfig() error {
 		panic(fmt.Sprintf("application configure file name{%v} suffix must be .toml", confFile))
 		return nil
 	}
-	conf = new(ClientConfig)
-	config.MustLoadWithPath(confFile, conf)
-	gxlog.CInfo("config{%#v}\n", conf)
+	clientConfig = new(ClientConfig)
+	config.MustLoadWithPath(confFile, clientConfig)
+	gxlog.CInfo("config{%#v}\n", clientConfig)
 
 	// log
 	confFile = os.Getenv(APP_LOG_CONF_FILE)

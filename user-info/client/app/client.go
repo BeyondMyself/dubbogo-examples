@@ -30,14 +30,14 @@ import (
 import (
 	"github.com/AlexStocks/dubbogo/client"
 	"github.com/AlexStocks/dubbogo/registry"
+	"github.com/AlexStocks/dubbogo/registry/zk"
 	"github.com/AlexStocks/dubbogo/selector"
+	"github.com/AlexStocks/dubbogo/selector/cache"
 )
 
 var (
-	connectTimeout  time.Duration = 100e6
-	requestTimeout  time.Duration = 10e6
-	survivalTimeout int           = 10e9
-	rpcClient                     = make(map[client.CodecType]client.Client, 8)
+	survivalTimeout int = 10e9
+	clientSelector  selector.Selector
 )
 
 func main() {
@@ -63,36 +63,26 @@ func main() {
 
 func initClient() {
 	var (
-		ok             bool
 		err            error
-		reqTimeout     time.Duration
 		codecType      client.CodecType
-		newRegistry    registry.NewRegistry
-		newSelector    selector.NewSelector
 		clientRegistry registry.Registry
-		clientSelector selector.Selector
 	)
 
-	if conf == nil {
-		panic(fmt.Sprintf("conf is nil"))
+	if clientConfig == nil {
+		panic(fmt.Sprintf("clientConfig is nil"))
 		return
 	}
 
 	// registry
-	newRegistry, ok = client.DefaultRegistries[conf.Registry]
-	if !ok {
-		panic(fmt.Sprintf("illegal registry conf{%v}", conf.Registry))
-		return
-	}
-	clientRegistry = newRegistry(
-		registry.ApplicationConf(conf.Application_Config),
-		registry.RegistryConf(conf.Registry_Config),
+	clientRegistry = zookeeper.NewConsumerZookeeperRegistry(
+		registry.ApplicationConf(clientConfig.Application_Config),
+		registry.RegistryConf(clientConfig.Registry_Config),
 	)
 	if clientRegistry == nil {
 		panic("fail to init registry.Registy")
 		return
 	}
-	for _, service := range conf.Service_List {
+	for _, service := range clientConfig.Service_List {
 		err = clientRegistry.Register(service)
 		if err != nil {
 			panic(fmt.Sprintf("registry.Register(service{%#v}) = error{%v}", service, err))
@@ -101,12 +91,7 @@ func initClient() {
 	}
 
 	// selector
-	newSelector, ok = client.DefaultSelectors[conf.Selector]
-	if !ok {
-		panic(fmt.Sprintf("illegal selector conf{%v}", conf.Selector))
-		return
-	}
-	clientSelector = newSelector(
+	clientSelector = cache.NewSelector(
 		selector.Registry(clientRegistry),
 		selector.SelectMode(selector.SM_RoundRobin),
 	)
@@ -116,42 +101,31 @@ func initClient() {
 	}
 
 	// consumer
-	reqTimeout, err = time.ParseDuration(conf.Request_Timeout)
+	clientConfig.requestTimeout, err = time.ParseDuration(clientConfig.Request_Timeout)
 	if err != nil {
-		panic(fmt.Sprintf("time.ParseDuration(Request_Timeout{%#v}) = error{%v}", conf.Request_Timeout, err))
+		panic(fmt.Sprintf("time.ParseDuration(Request_Timeout{%#v}) = error{%v}", clientConfig.Request_Timeout, err))
 		return
 	}
-	connectTimeout, err = time.ParseDuration(conf.Connect_Timeout)
+	clientConfig.connectTimeout, err = time.ParseDuration(clientConfig.Connect_Timeout)
 	if err != nil {
-		panic(fmt.Sprintf("time.ParseDuration(Connect_Timeout{%#v}) = error{%v}", conf.Connect_Timeout, err))
+		panic(fmt.Sprintf("time.ParseDuration(Connect_Timeout{%#v}) = error{%v}", clientConfig.Connect_Timeout, err))
 		return
 	}
-	gxlog.CInfo("consumer retries:%d", conf.Retries)
-	for idx := range conf.Service_List {
-		codecType = client.GetCodecType(conf.Service_List[idx].Protocol)
-		if codecType == client.CODECTYPE_UNKNOWN {
-			panic(fmt.Sprintf("unknown protocol %s", conf.Service_List[idx].Protocol))
-		}
 
-		rpcClient[codecType] = client.NewClient(
-			client.RequestTimeout(reqTimeout),
-			client.Registry(clientRegistry),
-			client.Selector(clientSelector),
-			// client.ClientCodecType(codecType),
-		)
+	for idx := range clientConfig.Service_List {
+		codecType = client.GetCodecType(clientConfig.Service_List[idx].Protocol)
+		if codecType == client.CODECTYPE_UNKNOWN {
+			panic(fmt.Sprintf("unknown protocol %s", clientConfig.Service_List[idx].Protocol))
+		}
 	}
 }
 
 func uninitClient() {
-	for k := range rpcClient {
-		rpcClient[k].Close()
-	}
-	rpcClient = nil
 	log.Close()
 }
 
 func initProfiling() {
-	if !conf.Pprof_Enabled {
+	if !clientConfig.Pprof_Enabled {
 		return
 	}
 	const (
@@ -167,7 +141,7 @@ func initProfiling() {
 	if err != nil {
 		panic("cat not get local ip!")
 	}
-	addr = ip + ":" + strconv.Itoa(conf.Pprof_Port)
+	addr = ip + ":" + strconv.Itoa(clientConfig.Pprof_Port)
 	log.Info("App Profiling startup on address{%v}", addr+PprofPath)
 
 	go func() {
