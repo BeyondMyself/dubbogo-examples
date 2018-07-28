@@ -24,13 +24,14 @@ import (
 
 import (
 	"github.com/AlexStocks/goext/log"
+	"github.com/AlexStocks/goext/net"
+	"github.com/AlexStocks/goext/time"
 	log "github.com/AlexStocks/log4go"
 	jerrors "github.com/juju/errors"
 )
 
 import (
 	"github.com/AlexStocks/dubbogo/client"
-	"github.com/AlexStocks/dubbogo/codec"
 	"github.com/AlexStocks/dubbogo/common"
 	"github.com/AlexStocks/dubbogo/registry"
 	"github.com/AlexStocks/dubbogo/selector"
@@ -49,7 +50,7 @@ type (
 var (
 	connectTimeout  time.Duration = 100e6
 	survivalTimeout int           = 10e9
-	rpcClient                     = make(map[codec.CodecType]client.Client, 8)
+	rpcClient                     = make(map[client.CodecType]client.Client, 8)
 )
 
 func main() {
@@ -74,9 +75,8 @@ func initClient() {
 	var (
 		ok             bool
 		err            error
-		ttl            time.Duration
 		reqTimeout     time.Duration
-		codecType      codec.CodecType
+		codecType      client.CodecType
 		registryNew    RegistryNew
 		selectorNew    SelectorNew
 		clientRegistry registry.Registry
@@ -126,11 +126,6 @@ func initClient() {
 	}
 
 	// consumer
-	ttl, err = time.ParseDuration(conf.Pool_TTL)
-	if err != nil {
-		panic(fmt.Sprintf("time.ParseDuration(Pool_TTL{%#v}) = error{%v}", conf.Pool_TTL, jerrors.ErrorStack(err)))
-		return
-	}
 	reqTimeout, err = time.ParseDuration(conf.Request_Timeout)
 	if err != nil {
 		panic(fmt.Sprintf("time.ParseDuration(Request_Timeout{%#v}) = error{%v}",
@@ -146,19 +141,15 @@ func initClient() {
 	// ttl, err = (conf.Request_Timeout)
 	gxlog.CInfo("consumer retries:%d", conf.Retries)
 	for idx := range conf.Service_List {
-		codecType = codec.GetCodecType(conf.Service_List[idx].Protocol)
-		if codecType == codec.CODECTYPE_UNKNOWN {
+		codecType = client.GetCodecType(conf.Service_List[idx].Protocol)
+		if codecType == client.CODECTYPE_UNKNOWN {
 			panic(fmt.Sprintf("unknown protocol %s", conf.Service_List[idx].Protocol))
 		}
 
 		rpcClient[codecType] = client.NewClient(
-			client.Retries(conf.Retries),
-			client.PoolSize(conf.Pool_Size),
-			client.PoolTTL(ttl),
 			client.RequestTimeout(reqTimeout),
 			client.Registry(clientRegistry),
 			client.Selector(clientSelector),
-			client.CodecType(codecType),
 		)
 	}
 
@@ -186,7 +177,7 @@ func initProfiling() {
 		addr string
 	)
 
-	ip, err = common.GetLocalIP(ip)
+	ip, err = gxnet.GetLocalIP()
 	if err != nil {
 		panic("cat not get local ip!")
 	}
@@ -209,7 +200,7 @@ func initSignal() {
 		case syscall.SIGHUP:
 		// reload()
 		default:
-			go common.Future(survivalTimeout, func() {
+			go gxtime.Future(survivalTimeout, func() {
 				log.Warn("app exit now by force...")
 				os.Exit(1)
 			})
@@ -240,7 +231,7 @@ func test() {
 	idx = -1
 	service = string("com.ikurento.HelloService")
 	for i := range conf.Service_List {
-		if conf.Service_List[i].Service == service && conf.Service_List[i].Protocol == codec.CODECTYPE_JSONRPC.String() {
+		if conf.Service_List[i].Service == service && conf.Service_List[i].Protocol == client.CODECTYPE_JSONRPC.String() {
 			idx = i
 			break
 		}
@@ -253,7 +244,7 @@ func test() {
 
 	// Create request
 	method = string("Echo")
-	clt = rpcClient[codec.CODECTYPE_JSONRPC]
+	clt = rpcClient[client.CODECTYPE_JSONRPC]
 	req = clt.NewRequest(
 		conf.Service_List[idx].Group,
 		conf.Service_List[idx].Version,

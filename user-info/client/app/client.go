@@ -134,11 +134,10 @@ func initClient() {
 		}
 
 		rpcClient[codecType] = client.NewClient(
-			client.Retries(conf.Retries),
 			client.RequestTimeout(reqTimeout),
 			client.Registry(clientRegistry),
 			client.Selector(clientSelector),
-			client.ClientCodecType(codecType),
+			// client.ClientCodecType(codecType),
 		)
 	}
 }

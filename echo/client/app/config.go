@@ -27,7 +27,6 @@ import (
 	"github.com/AlexStocks/dubbogo/registry/zk"
 	"github.com/AlexStocks/dubbogo/selector"
 	"github.com/AlexStocks/dubbogo/selector/cache"
-	"github.com/AlexStocks/dubbogo/transport"
 )
 
 const (
@@ -36,9 +35,8 @@ const (
 )
 
 type (
-	RegistryNew  func(...registry.Option) registry.Registry
-	SelectorNew  func(...selector.Option) selector.Selector
-	TransportNew func(...transport.Option) transport.Transport
+	RegistryNew func(...registry.Option) registry.Registry
+	SelectorNew func(...selector.Option) selector.Selector
 )
 
 var (
@@ -77,8 +75,6 @@ type (
 		Request_Timeout string `default:"5s"` // 500ms, 1m
 		NET_IO_Timeout  string `default:"5s"` // 500ms, 1m
 		Retries         int    `default:"1"`
-		Pool_Size       int    `default:"128"`
-		Pool_TTL        string `default:"1m"`
 		Connect_Timeout string `default:"100ms"`
 
 		// codec & selector & transport & registry
