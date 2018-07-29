@@ -31,12 +31,11 @@ import (
 import (
 	"github.com/AlexStocks/dubbogo/client"
 	"github.com/AlexStocks/dubbogo/registry"
-	"github.com/AlexStocks/dubbogo/selector"
 )
 
 var (
 	survivalTimeout int = 10e9
-	clientSelector  *selector.Selector
+	clientRegistry  *registry.ZkConsumerRegistry
 )
 
 func main() {
@@ -62,9 +61,8 @@ func main() {
 
 func initClient() {
 	var (
-		err            error
-		codecType      client.CodecType
-		clientRegistry *registry.ZkConsumerRegistry
+		err       error
+		codecType client.CodecType
 	)
 
 	if clientConfig == nil {
@@ -74,8 +72,10 @@ func initClient() {
 
 	// registry
 	clientRegistry, err = registry.NewZkConsumerRegistry(
-		clientConfig.Application_Config,
-		clientConfig.Registry_Config,
+		registry.ApplicationConf(clientConfig.Application_Config),
+		registry.RegistryConf(clientConfig.Registry_Config),
+		registry.BalanceMode(registry.SM_RoundRobin),
+		registry.ServiceTTL(300e9),
 	)
 	if err != nil {
 		panic(fmt.Sprintf("fail to init registry.Registy, err:%s", jerrors.ErrorStack(err)))
@@ -87,13 +87,6 @@ func initClient() {
 			panic(fmt.Sprintf("registry.Register(service{%#v}) = error{%v}", service, jerrors.ErrorStack(err)))
 			return
 		}
-	}
-
-	// selector
-	clientSelector = selector.NewSelector(clientRegistry, selector.SM_RoundRobin, 300e9)
-	if clientSelector == nil {
-		panic(fmt.Sprintf("NewSelector(opts{registry{%#v}}) = nil", clientRegistry))
-		return
 	}
 
 	// consumer

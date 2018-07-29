@@ -23,9 +23,7 @@ import (
 
 import (
 	"github.com/AlexStocks/dubbogo/client"
-	"github.com/AlexStocks/dubbogo/common"
 	"github.com/AlexStocks/dubbogo/registry"
-	"github.com/AlexStocks/dubbogo/selector"
 )
 
 func testJsonrpc(userKey string) {
@@ -39,7 +37,6 @@ func testJsonrpc(userKey string) {
 		conf       registry.ServiceConfig
 		req        client.Request
 		serviceURL *registry.ServiceURL
-		next       selector.Next
 		clt        *client.HTTPClient
 	)
 
@@ -74,18 +71,13 @@ func testJsonrpc(userKey string) {
 	}
 	req = clt.NewRequest(conf, method, []string{userKey})
 
-	next, err = clientSelector.Select(req.ServiceConfig())
+	serviceURL, err = clientRegistry.Filter(req.ServiceConfig(), 1)
 	if err != nil {
-		gxlog.CError("selector.Select(conf:%#v) = error:%s", req.ServiceConfig(), jerrors.ErrorStack(err))
-		return
-	}
-	serviceURL, err = next(req.ID)
-	if err != nil {
-		gxlog.CError("next() = error:%s", jerrors.ErrorStack(err))
+		gxlog.CError("registry.Filter(conf:%#v) = error:%s", req.ServiceConfig(), jerrors.ErrorStack(err))
 		return
 	}
 	// Set arbitrary headers in context
-	ctx = context.WithValue(context.Background(), common.DUBBOGO_CTX_KEY, map[string]string{
+	ctx = context.WithValue(context.Background(), client.DUBBOGO_CTX_KEY, map[string]string{
 		"X-Proxy-Id": "dubbogo",
 		"X-Services": service,
 		"X-Method":   method,

@@ -24,7 +24,6 @@ import (
 )
 
 import (
-	"github.com/AlexStocks/dubbogo/common"
 	"github.com/AlexStocks/dubbogo/registry"
 )
 
@@ -56,7 +55,7 @@ type (
 		Selector_TTL string `default:"10m"`
 		Registry     string `default:"zookeeper"`
 		// application
-		Application_Config common.ApplicationConfig
+		Application_Config registry.ApplicationConfig
 		Registry_Config    registry.RegistryConfig
 		// 一个客户端只允许使用一个service的其中一个group和其中一个version
 		Service_List []registry.ServiceConfig
