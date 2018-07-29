@@ -25,19 +25,18 @@ import (
 	"github.com/AlexStocks/goext/log"
 	"github.com/AlexStocks/goext/net"
 	log "github.com/AlexStocks/log4go"
+	jerrors "github.com/juju/errors"
 )
 
 import (
 	"github.com/AlexStocks/dubbogo/client"
 	"github.com/AlexStocks/dubbogo/registry"
-	"github.com/AlexStocks/dubbogo/registry/zk"
 	"github.com/AlexStocks/dubbogo/selector"
-	"github.com/AlexStocks/dubbogo/selector/cache"
 )
 
 var (
 	survivalTimeout int = 10e9
-	clientSelector  selector.Selector
+	clientSelector  *selector.Selector
 )
 
 func main() {
@@ -65,7 +64,7 @@ func initClient() {
 	var (
 		err            error
 		codecType      client.CodecType
-		clientRegistry registry.Registry
+		clientRegistry *registry.ZkConsumerRegistry
 	)
 
 	if clientConfig == nil {
@@ -74,27 +73,24 @@ func initClient() {
 	}
 
 	// registry
-	clientRegistry = zookeeper.NewConsumerZookeeperRegistry(
-		registry.ApplicationConf(clientConfig.Application_Config),
-		registry.RegistryConf(clientConfig.Registry_Config),
+	clientRegistry, err = registry.NewZkConsumerRegistry(
+		clientConfig.Application_Config,
+		clientConfig.Registry_Config,
 	)
-	if clientRegistry == nil {
-		panic("fail to init registry.Registy")
+	if err != nil {
+		panic(fmt.Sprintf("fail to init registry.Registy, err:%s", jerrors.ErrorStack(err)))
 		return
 	}
 	for _, service := range clientConfig.Service_List {
 		err = clientRegistry.Register(service)
 		if err != nil {
-			panic(fmt.Sprintf("registry.Register(service{%#v}) = error{%v}", service, err))
+			panic(fmt.Sprintf("registry.Register(service{%#v}) = error{%v}", service, jerrors.ErrorStack(err)))
 			return
 		}
 	}
 
 	// selector
-	clientSelector = cache.NewSelector(
-		selector.Registry(clientRegistry),
-		selector.SelectMode(selector.SM_RoundRobin),
-	)
+	clientSelector = selector.NewSelector(clientRegistry, selector.SM_RoundRobin, 300e9)
 	if clientSelector == nil {
 		panic(fmt.Sprintf("NewSelector(opts{registry{%#v}}) = nil", clientRegistry))
 		return
@@ -103,12 +99,14 @@ func initClient() {
 	// consumer
 	clientConfig.requestTimeout, err = time.ParseDuration(clientConfig.Request_Timeout)
 	if err != nil {
-		panic(fmt.Sprintf("time.ParseDuration(Request_Timeout{%#v}) = error{%v}", clientConfig.Request_Timeout, err))
+		panic(fmt.Sprintf("time.ParseDuration(Request_Timeout{%#v}) = error{%v}",
+			clientConfig.Request_Timeout, err))
 		return
 	}
 	clientConfig.connectTimeout, err = time.ParseDuration(clientConfig.Connect_Timeout)
 	if err != nil {
-		panic(fmt.Sprintf("time.ParseDuration(Connect_Timeout{%#v}) = error{%v}", clientConfig.Connect_Timeout, err))
+		panic(fmt.Sprintf("time.ParseDuration(Connect_Timeout{%#v}) = error{%v}",
+			clientConfig.Connect_Timeout, err))
 		return
 	}
 
@@ -152,7 +150,8 @@ func initProfiling() {
 func initSignal() {
 	signals := make(chan os.Signal, 1)
 	// It is not possible to block SIGKILL or syscall.SIGSTOP
-	signal.Notify(signals, os.Interrupt, os.Kill, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT)
+	signal.Notify(signals, os.Interrupt, os.Kill, syscall.SIGHUP,
+		syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT)
 	for {
 		sig := <-signals
 		log.Info("get signal %s", sig.String())
