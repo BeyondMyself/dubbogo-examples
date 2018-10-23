@@ -61,10 +61,10 @@ func main() {
 
 	time.Sleep(1e9) // wait for selector
 
-	// gxlog.CInfo("\n\n\nstart to test jsonrpc")
-	// testJsonrpc("A003")
+	gxlog.CInfo("\n\n\nstart to test jsonrpc")
+	testJsonrpc("A003")
 	// gxlog.CInfo("\n\n\nstart to test dubbo Calc")
-	testDubboCalc()
+	// testDubboCalc()
 	// gxlog.CInfo("\n\n\nstart to test dubbo Sum")
 	// testDubboSum()
 	// gxlog.CInfo("\n\n\nstart to test dubbo GetUsers")
